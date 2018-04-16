@@ -1,6 +1,10 @@
+import datetime
 import os
 
 import base64
+import time
+from itertools import product
+
 import pytest
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
@@ -42,13 +46,29 @@ def test_rsa_sign():
     assert result is None
 
 
-def test_jwt_token():
+nbfs = [
+    time.time() - 6,
+    datetime.datetime.now() - datetime.timedelta(seconds=6),
+    datetime.timedelta(seconds=6),
+    int(time.time() - 6),
+]
+
+expires = [
+    time.time() + 600,
+    datetime.datetime.now() + datetime.timedelta(seconds=600),
+    datetime.timedelta(seconds=600),
+    int(time.time() + 600),
+]
+
+
+@pytest.mark.parametrize("expired,nbf", product(expires, nbfs))
+def test_jwt_token(expired, nbf):
     bits = 2048
     key, public = rsa.generate_rsa(bits)
 
     jwt = JWT(key, public)
 
-    token = jwt.encode(foo='bar')
+    token = jwt.encode(foo='bar', expired=expired, nbf=nbf)
 
     assert token
     assert 'foo' in jwt.decode(token)

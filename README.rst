@@ -29,3 +29,75 @@ Helpers for JWT tokens with RSA.
     >>> # No verify token signature and expiration
     >>> jwt.decode(token, verify=False)
     {'foo': 'bar', 'exp': -1, 'nbf': 1523350046.935803}
+
+
+Command line utilities
+----------------------
+
+Module provides following utilities
+
+jwt-rsa-keygen
+++++++++++++++
+
+Creates a new key pair:
+
+.. code-block::
+
+   $ jwt-rsa-keygen -h                                                                                                                                                                                              ±8 ?3 master
+   usage: jwt-rsa-keygen [-h] [-b BITS] [-P]
+
+   optional arguments:
+     -h, --help            show this help message and exit
+     -b BITS, --bits BITS
+     -P, --pem
+
+
+By default this utility return JSON-serialized key pair:
+
+.. code-block::
+
+   $ jwt-rsa-keygen                                                                                                                                                                                                 ±8 ?3 master
+   {
+      "private": "MIIEvgIBADANBg......h3MBsSzx",
+      "public": "MIIBCgKCAQEAxUU......5niBEjAB"
+   }
+
+Add parameter `-P` for return in PEM format:
+
+.. code-block::
+
+   $ jwt-rsa-keygen -P                                                                                                                                                                                              ±8 ?3 master
+   -----BEGIN PRIVATE KEY-----
+   MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDDeiI5V/O/Mbff
+   ...
+   LGQgWf5ch0t1+Rh3tjIuuSc=
+   -----END PRIVATE KEY-----
+
+   -----BEGIN RSA PUBLIC KEY-----
+   MIIBCgKCAQEAw3oiOVfzvzG331nAL5hGHbblcCaV3pbfoCiFRgwpNPf7snIJtw97
+   ...
+   3k2mMT1z6NFO6e6LMxg2zrqs3zgqwx5/9wIDAQAB
+   -----END RSA PUBLIC KEY-----
+
+
+jwt-rsa-verify
+++++++++++++++
+
+Verify JSON serialized key pair:
+
+.. code-block::
+
+   $ jwt-rsa-keygen | jwt-rsa-verify                                                                                                                                                                                ±8 ?3 master
+   INFO:root:Awaiting JSON on stdin...
+   INFO:root:Signing OK
+   INFO:root:Verifying OK
+
+Or failed when key pair is invalid or doesn't match:
+
+.. code-block::
+
+   $ jwt-rsa-keygen | sed 's/M/j/' | jwt-rsa-verify                                                                                                                                                                 ±8 ?3 master
+   INFO:root:Awaiting JSON on stdin...
+   Traceback (most recent call last):
+     ...
+   ValueError: Could not deserialize key data.

@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# encoding: utf-8
-
 try:
     from .version import __version__, version_info
 except ImportError:

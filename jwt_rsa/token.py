@@ -1,5 +1,6 @@
 import time
 from datetime import timedelta, datetime
+from operator import sub, add
 
 from jwt import PyJWT
 from jwt_rsa.rsa import RSAPrivateKey, RSAPublicKey
@@ -23,9 +24,9 @@ class JWT:
         self.__expires = expires or self.DEFAULT_EXPIRATION
         self.__nbf_delta = nbf_delta or self.NBF_DELTA
 
-    def _date_to_timestamp(self, value, default):
+    def _date_to_timestamp(self, value, default, timedelta_func=add):
         if isinstance(value, timedelta):
-            return time.time() + value.total_seconds()
+            return timedelta_func(time.time(), value.total_seconds())
         elif isinstance(value, datetime):
             return value.timestamp()
         elif isinstance(value, (int, float)):
@@ -47,7 +48,8 @@ class JWT:
                 ),
                 nbf=self._date_to_timestamp(
                     nbf,
-                    lambda: time.time() - self.__nbf_delta
+                    lambda: time.time() - self.__nbf_delta,
+                    timedelta_func=sub
                 ),
             )
         )
@@ -79,5 +81,5 @@ if __name__ == '__main__':
 
     token = jwt.encode()
 
-    print('Token', token.decode())
+    print('Token', token)
     print('Content', jwt.decode(token))
