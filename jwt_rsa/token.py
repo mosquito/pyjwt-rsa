@@ -60,7 +60,7 @@ class JWT:
             algorithm='RS512',
         ).decode()
 
-    def decode(self, token: str, verify=True) -> dict:
+    def decode(self, token: str, verify=True, **kwargs) -> dict:
         if not self.__public_key:
             raise RuntimeError("Can't decode without public key")
 
@@ -69,6 +69,7 @@ class JWT:
             key=self.__public_key,
             verify=verify,
             algorithms={'RS512'},
+            **kwargs
         )
 
 
