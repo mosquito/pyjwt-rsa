@@ -40,8 +40,6 @@ def main():
         hashes.SHA256()
     )
 
-    if result is not None:
-        logging.error("Not verified")
     assert result is None
 
     logging.info("Verifying OK")

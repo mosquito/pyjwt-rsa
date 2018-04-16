@@ -51,6 +51,8 @@ nbfs = [
     datetime.datetime.now() - datetime.timedelta(seconds=6),
     datetime.timedelta(seconds=6),
     int(time.time() - 6),
+    # DEFAULT VALUE
+    JWT._nil,
 ]
 
 expires = [
@@ -58,6 +60,8 @@ expires = [
     datetime.datetime.now() + datetime.timedelta(seconds=600),
     datetime.timedelta(seconds=600),
     int(time.time() + 600),
+    # DEFAULT VALUE
+    JWT._nil,
 ]
 
 
@@ -84,3 +88,37 @@ def test_jwt_token(expired, nbf):
 
     with pytest.raises(InvalidAlgorithmError):
         jwt.decode(".".join((header, data, '')))
+
+
+def test_jwt_token_invalid_expiration():
+    bits = 2048
+    key, public = rsa.generate_rsa(bits)
+
+    jwt = JWT(key, public)
+
+    with pytest.raises(ValueError):
+        jwt.encode(foo='bar', expired=None, nbf=None)
+
+
+def test_decode_only_ability():
+    bits = 2048
+    key, public = rsa.generate_rsa(bits)
+
+    jwt = JWT(key)
+    token = jwt.encode(foo='bar')
+
+    with pytest.raises(RuntimeError):
+        jwt.decode(token)
+
+
+def test_encode_only_ability():
+    bits = 2048
+    key, public = rsa.generate_rsa(bits)
+
+    token = JWT(key).encode(foo='bar')
+
+    jwt = JWT(None, public)
+    assert 'foo' in jwt.decode(token)
+
+    with pytest.raises(RuntimeError):
+        jwt.encode(foo=None)
