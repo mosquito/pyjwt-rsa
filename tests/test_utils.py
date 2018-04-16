@@ -1,7 +1,7 @@
 import base64
 import json
 import os
-from io import BytesIO
+from io import StringIO
 from unittest import mock
 
 import pytest
@@ -94,7 +94,7 @@ def test_rsa_verify(capsys):
 
     stdout, stderr = capsys.readouterr()
 
-    with mock.patch('sys.stdin', BytesIO(stdout.encode())):
+    with mock.patch('sys.stdin', StringIO(stdout)):
         verify()
 
 
@@ -118,6 +118,6 @@ def test_rsa_verify_bad_key():
         ).decode()
     }, indent='\t')
 
-    with mock.patch('sys.stdin', BytesIO(data.encode())):
+    with mock.patch('sys.stdin', StringIO(data)):
         with pytest.raises(InvalidSignature):
             verify()
