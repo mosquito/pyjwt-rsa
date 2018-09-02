@@ -42,14 +42,18 @@ class JWT:
 
         claims.update(
             dict(
-                exp=self._date_to_timestamp(
-                    expired,
-                    lambda: int(time.time() + self.__expires)
+                exp=int(
+                    self._date_to_timestamp(
+                        expired,
+                        lambda: time.time() + self.__expires
+                    )
                 ),
-                nbf=self._date_to_timestamp(
-                    nbf,
-                    lambda: int(time.time() - self.__nbf_delta),
-                    timedelta_func=sub
+                nbf=int(
+                    self._date_to_timestamp(
+                        nbf,
+                        lambda: time.time() - self.__nbf_delta,
+                        timedelta_func=sub
+                    )
                 ),
             )
         )
