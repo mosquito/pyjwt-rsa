@@ -1,16 +1,19 @@
 import time
 from datetime import timedelta, datetime
 from operator import sub, add
+from typing import Union
 
 from jwt import PyJWT
 from jwt_rsa.rsa import RSAPrivateKey, RSAPublicKey
+
+
+DateType = Union[timedelta, datetime, float, int, type(Ellipsis)]
 
 
 class JWT:
     __slots__ = ('__private_key', '__public_key', '__jwt',
                  '__expires', '__nbf_delta')
 
-    _nil = object()
     DEFAULT_EXPIRATION = 86400 * 30  # one month
     NBF_DELTA = 20
 
@@ -31,12 +34,12 @@ class JWT:
             return value.timestamp()
         elif isinstance(value, (int, float)):
             return value
-        elif value is self._nil:
+        elif value is Ellipsis:
             return default()
 
         raise ValueError(type(value))
 
-    def encode(self, expired=_nil, nbf=_nil, **claims) -> str:
+    def encode(self, expired: DateType=..., nbf: DateType=..., **claims) -> str:
         if not self.__private_key:
             raise RuntimeError("Can't encode without private key")
 

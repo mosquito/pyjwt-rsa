@@ -45,6 +45,7 @@ setup(
         'console_scripts': [
             'jwt-rsa-keygen = {}.keygen:main'.format(module_name),
             'jwt-rsa-verify = {}.verify:main'.format(module_name),
+            'jwt-rsa-issue= {}.issue:main'.format(module_name),
         ]
     },
     python_requires=">=3.4.*, <4",

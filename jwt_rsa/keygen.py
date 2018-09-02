@@ -8,8 +8,8 @@ from cryptography.hazmat.primitives import serialization
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-b', '--bits', type=int, default=2048)
-    parser.add_argument('-P', '--pem', action='store_true')
+    parser.add_argument('-b', '--bits', dest="bits", type=int, default=2048)
+    parser.add_argument('-P', '--pem', dest="pem", action='store_true')
 
     arguments = parser.parse_args()
 
