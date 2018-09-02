@@ -44,11 +44,11 @@ class JWT:
             dict(
                 exp=self._date_to_timestamp(
                     expired,
-                    lambda: time.time() + self.__expires
+                    lambda: int(time.time() + self.__expires)
                 ),
                 nbf=self._date_to_timestamp(
                     nbf,
-                    lambda: time.time() - self.__nbf_delta,
+                    lambda: int(time.time() - self.__nbf_delta),
                     timedelta_func=sub
                 ),
             )
