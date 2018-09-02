@@ -52,7 +52,7 @@ nbfs = [
     datetime.timedelta(seconds=6),
     int(time.time() - 6),
     # DEFAULT VALUE
-    JWT._nil,
+    ...,
 ]
 
 expires = [
@@ -61,7 +61,7 @@ expires = [
     datetime.timedelta(seconds=600),
     int(time.time() + 600),
     # DEFAULT VALUE
-    JWT._nil,
+    ...,
 ]
 
 
