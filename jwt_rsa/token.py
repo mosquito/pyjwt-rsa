@@ -12,20 +12,25 @@ DateType = Union[timedelta, datetime, float, int, type(Ellipsis)]
 
 class JWT:
     __slots__ = ('__private_key', '__public_key', '__jwt',
-                 '__expires', '__nbf_delta')
+                 '__expires', '__nbf_delta', '__algorithm')
 
     DEFAULT_EXPIRATION = 86400 * 30  # one month
     NBF_DELTA = 20
+    ALGORITHMS = tuple({
+        'RS256', 'RS384', 'RS512', 'ES256', 'ES384',
+        'ES521', 'ES512', 'PS256', 'PS384', 'PS512'
+    })
 
     def __init__(self, private_key: RSAPrivateKey=None,
                  public_key: RSAPublicKey=None, expires=None,
-                 nbf_delta=None):
+                 nbf_delta=None, algorithm="RS512"):
 
         self.__private_key = private_key
         self.__public_key = public_key
-        self.__jwt = PyJWT(algorithms={'RS512'})
+        self.__jwt = PyJWT(algorithms=self.ALGORITHMS)
         self.__expires = expires or self.DEFAULT_EXPIRATION
         self.__nbf_delta = nbf_delta or self.NBF_DELTA
+        self.__algorithm = algorithm
 
     def _date_to_timestamp(self, value, default, timedelta_func=add):
         if isinstance(value, timedelta):
@@ -64,7 +69,7 @@ class JWT:
         return self.__jwt.encode(
             claims,
             self.__private_key,
-            algorithm='RS512',
+            algorithm=self.__algorithm,
         ).decode()
 
     def decode(self, token: str, verify=True, **kwargs) -> dict:
@@ -72,10 +77,10 @@ class JWT:
             raise RuntimeError("Can't decode without public key")
 
         return self.__jwt.decode(
-            token.encode(),
+            token,
             key=self.__public_key,
             verify=verify,
-            algorithms={'RS512'},
+            algorithms=self.ALGORITHMS,
             **kwargs
         )
 
