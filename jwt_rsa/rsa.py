@@ -1,21 +1,18 @@
 import base64
 from collections import namedtuple
-from typing import Tuple
 
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
-
+from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.asymmetric.rsa import (
     RSAPrivateKeyWithSerialization as RSAPrivateKey,
     RSAPublicKeyWithSerialization as RSAPublicKey,
 )
 
-
 KeyPair = namedtuple('KeyPair', ('private', 'public'))
 
 
-def generate_rsa(bits=2048) -> Tuple[RSAPrivateKey, RSAPublicKey]:
+def generate_rsa(bits: int = 2048) -> KeyPair:
     '''
     Generate an RSA keypair with an exponent of 65537 in PEM format
     param: bits The key length in bits

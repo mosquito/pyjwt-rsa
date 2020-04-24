@@ -8,7 +8,7 @@ from cryptography.hazmat.primitives.asymmetric import padding
 from jwt_rsa.rsa import load_private_key, load_public_key
 
 
-def main():
+def main() -> None:
     logging.basicConfig(level=logging.INFO)
 
     logging.info("Awaiting JSON on stdin...")

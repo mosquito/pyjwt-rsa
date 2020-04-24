@@ -138,3 +138,5 @@ fabric.properties
 .DS_Store
 
 /*/version.py
+
+.mypy_cache/*

@@ -1,4 +1,5 @@
 coverage!=4.3
+mypy~=0.770
 pylama
 pytest
 pytest-cov

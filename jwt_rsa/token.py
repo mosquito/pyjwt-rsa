@@ -1,13 +1,20 @@
 import time
-from datetime import timedelta, datetime
-from operator import sub, add
-from typing import Union
+from datetime import datetime, timedelta
+from operator import add, sub
+from typing import Any, Callable, Dict, Optional, TYPE_CHECKING, TypeVar, \
+    Union
 
 from jwt import PyJWT
+
 from jwt_rsa.rsa import RSAPrivateKey, RSAPublicKey
 
+if TYPE_CHECKING:
+    # pylama:ignore=E0602
+    DateType = Union[timedelta, datetime, float, int, ellipsis]
+else:
+    DateType = Union[timedelta, datetime, float, int, type(Ellipsis)]
 
-DateType = Union[timedelta, datetime, float, int, type(Ellipsis)]
+R = TypeVar('R')
 
 
 class JWT:
@@ -21,9 +28,14 @@ class JWT:
         'ES521', 'ES512', 'PS256', 'PS384', 'PS512'
     })
 
-    def __init__(self, private_key: RSAPrivateKey=None,
-                 public_key: RSAPublicKey=None, expires=None,
-                 nbf_delta=None, algorithm="RS512"):
+    def __init__(
+        self,
+        private_key: Optional[RSAPrivateKey] = None,
+        public_key: Optional[RSAPublicKey] = None,
+        expires: Optional[int] = None,
+        nbf_delta: Optional[int] = None,
+        algorithm: str = "RS512"
+    ):
 
         self.__private_key = private_key
         self.__public_key = public_key
@@ -32,7 +44,12 @@ class JWT:
         self.__nbf_delta = nbf_delta or self.NBF_DELTA
         self.__algorithm = algorithm
 
-    def _date_to_timestamp(self, value, default, timedelta_func=add):
+    def _date_to_timestamp(
+        self,
+        value: DateType,
+        default: Callable[[], R],
+        timedelta_func: Callable[[float, float], int] = add
+    ) -> Union[int, float, R]:
         if isinstance(value, timedelta):
             return timedelta_func(time.time(), value.total_seconds())
         elif isinstance(value, datetime):
@@ -44,7 +61,12 @@ class JWT:
 
         raise ValueError(type(value))
 
-    def encode(self, expired: DateType=..., nbf: DateType=..., **claims) -> str:
+    def encode(
+        self,
+        expired: DateType = ...,
+        nbf: DateType = ...,
+        **claims: int
+    ) -> str:
         if not self.__private_key:
             raise RuntimeError("Can't encode without private key")
 
@@ -72,7 +94,9 @@ class JWT:
             algorithm=self.__algorithm,
         ).decode()
 
-    def decode(self, token: str, verify=True, **kwargs) -> dict:
+    def decode(
+        self, token: str, verify: bool = True, **kwargs: Any
+    ) -> Dict[str, Any]:
         if not self.__public_key:
             raise RuntimeError("Can't decode without public key")
 
