@@ -14,7 +14,7 @@ parser.add_argument("--nbf", help="Token nbf claim",
                     type=float, default=...)
 
 
-def main():
+def main() -> None:
     arguments = parser.parse_args()
     jwt = JWT(private_key=arguments.private_key)
     print(

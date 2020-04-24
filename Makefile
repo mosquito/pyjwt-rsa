@@ -36,3 +36,6 @@ develop: purge bump
 	env/bin/pip install -Ue '.[develop]'
 
 release: test upload
+
+mypy:
+	mypy jwt_rsa

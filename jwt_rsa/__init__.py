@@ -4,7 +4,6 @@ except ImportError:
     version_info = (0, 0, 0, 'x')
     __version__ = '{}.{}.{}+{}'.format(*version_info)
 
-
 authors = (
     ('Dmitry Orlov', 'me@mosquito.su'),
 )
