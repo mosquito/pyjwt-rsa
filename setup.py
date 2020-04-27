@@ -1,13 +1,14 @@
 import os
-from setuptools import setup, find_packages
 from importlib.machinery import SourceFileLoader
 
+from setuptools import find_packages, setup
 
-module_name = 'jwt_rsa'
+
+module_name = "jwt_rsa"
 
 module = SourceFileLoader(
     module_name,
-    os.path.join(module_name, '__init__.py')
+    os.path.join(module_name, "__init__.py"),
 ).load_module()
 
 
@@ -18,7 +19,7 @@ def load_requirements(fname):
 
 
 setup(
-    name='pyjwt-rsa',
+    name="pyjwt-rsa",
     version=module.__version__,
     author=module.__author__,
     author_email=module.authors_email,
@@ -27,31 +28,31 @@ setup(
     long_description=open("README.rst").read(),
     platforms="all",
     classifiers=[
-        'Intended Audience :: Developers',
-        'Natural Language :: Russian',
-        'Operating System :: MacOS',
-        'Operating System :: POSIX',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: Implementation :: CPython',
-        'Topic :: Security',
+        "Intended Audience :: Developers",
+        "Natural Language :: Russian",
+        "Operating System :: MacOS",
+        "Operating System :: POSIX",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: Implementation :: CPython",
+        "Topic :: Security",
     ],
-    packages=find_packages(exclude=['tests']),
-    install_requires=load_requirements('requirements.txt'),
+    packages=find_packages(exclude=["tests"]),
+    install_requires=load_requirements("requirements.txt"),
     extras_require={
-        'develop': load_requirements('requirements.dev.txt'),
+        "develop": load_requirements("requirements.dev.txt"),
     },
     entry_points={
-        'console_scripts': [
-            'jwt-rsa-keygen = {}.keygen:main'.format(module_name),
-            'jwt-rsa-verify = {}.verify:main'.format(module_name),
-            'jwt-rsa-issue= {}.issue:main'.format(module_name),
-        ]
+        "console_scripts": [
+            "jwt-rsa-keygen = {}.keygen:main".format(module_name),
+            "jwt-rsa-verify = {}.verify:main".format(module_name),
+            "jwt-rsa-issue= {}.issue:main".format(module_name),
+        ],
     },
     python_requires=">=3.5, <4",
-    url='https://github.com/mosquito/pyjwt-rsa'
+    url="https://github.com/mosquito/pyjwt-rsa",
 )
