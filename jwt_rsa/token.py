@@ -1,12 +1,11 @@
 import time
 from datetime import datetime, timedelta
 from operator import add, sub
-from typing import Any, Callable, Dict, Optional, TYPE_CHECKING, TypeVar, \
-    Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, TypeVar, Union
 
 from jwt import PyJWT
-
 from jwt_rsa.rsa import RSAPrivateKey, RSAPublicKey
+
 
 if TYPE_CHECKING:
     # pylama:ignore=E0602
@@ -14,18 +13,20 @@ if TYPE_CHECKING:
 else:
     DateType = Union[timedelta, datetime, float, int, type(Ellipsis)]
 
-R = TypeVar('R')
+R = TypeVar("R")
 
 
 class JWT:
-    __slots__ = ('__private_key', '__public_key', '__jwt',
-                 '__expires', '__nbf_delta', '__algorithm')
+    __slots__ = (
+        "__private_key", "__public_key", "__jwt",
+        "__expires", "__nbf_delta", "__algorithm",
+    )
 
     DEFAULT_EXPIRATION = 86400 * 30  # one month
     NBF_DELTA = 20
     ALGORITHMS = tuple({
-        'RS256', 'RS384', 'RS512', 'ES256', 'ES384',
-        'ES521', 'ES512', 'PS256', 'PS384', 'PS512'
+        "RS256", "RS384", "RS512", "ES256", "ES384",
+        "ES521", "ES512", "PS256", "PS384", "PS512",
     })
 
     def __init__(
@@ -34,7 +35,7 @@ class JWT:
         public_key: Optional[RSAPublicKey] = None,
         expires: Optional[int] = None,
         nbf_delta: Optional[int] = None,
-        algorithm: str = "RS512"
+        algorithm: str = "RS512",
     ):
 
         self.__private_key = private_key
@@ -48,7 +49,7 @@ class JWT:
         self,
         value: DateType,
         default: Callable[[], R],
-        timedelta_func: Callable[[float, float], int] = add
+        timedelta_func: Callable[[float, float], int] = add,
     ) -> Union[int, float, R]:
         if isinstance(value, timedelta):
             return timedelta_func(time.time(), value.total_seconds())
@@ -65,7 +66,7 @@ class JWT:
         self,
         expired: DateType = ...,
         nbf: DateType = ...,
-        **claims: int
+        **claims: int,
     ) -> str:
         if not self.__private_key:
             raise RuntimeError("Can't encode without private key")
@@ -75,17 +76,17 @@ class JWT:
                 exp=int(
                     self._date_to_timestamp(
                         expired,
-                        lambda: time.time() + self.__expires
-                    )
+                        lambda: time.time() + self.__expires,
+                    ),
                 ),
                 nbf=int(
                     self._date_to_timestamp(
                         nbf,
                         lambda: time.time() - self.__nbf_delta,
-                        timedelta_func=sub
-                    )
+                        timedelta_func=sub,
+                    ),
                 ),
-            )
+            ),
         )
 
         return self.__jwt.encode(
@@ -95,7 +96,7 @@ class JWT:
         ).decode()
 
     def decode(
-        self, token: str, verify: bool = True, **kwargs: Any
+        self, token: str, verify: bool = True, **kwargs: Any,
     ) -> Dict[str, Any]:
         if not self.__public_key:
             raise RuntimeError("Can't decode without public key")
@@ -105,11 +106,11 @@ class JWT:
             key=self.__public_key,
             verify=verify,
             algorithms=self.ALGORITHMS,
-            **kwargs
+            **kwargs,
         )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from jwt_rsa.rsa import generate_rsa
 
     key, public = generate_rsa(2048)
@@ -118,5 +119,5 @@ if __name__ == '__main__':
 
     token = jwt.encode()
 
-    print('Token', token)
-    print('Content', jwt.decode(token))
+    print("Token", token)
+    print("Content", jwt.decode(token))
