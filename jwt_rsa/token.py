@@ -66,7 +66,7 @@ class JWT:
         self,
         expired: DateType = ...,
         nbf: DateType = ...,
-        **claims: int,
+        **claims: int
     ) -> str:
         if not self.__private_key:
             raise RuntimeError("Can't encode without private key")
@@ -96,7 +96,7 @@ class JWT:
         ).decode()
 
     def decode(
-        self, token: str, verify: bool = True, **kwargs: Any,
+        self, token: str, verify: bool = True, **kwargs: Any
     ) -> Dict[str, Any]:
         if not self.__public_key:
             raise RuntimeError("Can't decode without public key")
