@@ -10,12 +10,12 @@ authors = (
 
 # TODO: Use mailing list instead
 authors_email = ", ".join(
-    f"{email}" for _, email in authors
+    str(email) for _, email in authors
 )
 
 __license__ = "MIT",
 __author__ = ", ".join(
-    f"{name} <{email}>" for name, email in authors
+    "{0} <{1}>".format(name, email) for name, email in authors
 )
 
 package_info = "RSA helpers for PyJWT"

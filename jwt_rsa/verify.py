@@ -5,7 +5,6 @@ import sys
 
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
-
 from jwt_rsa.rsa import load_private_key, load_public_key
 
 

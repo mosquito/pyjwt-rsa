@@ -5,11 +5,11 @@ from io import StringIO
 from unittest import mock
 
 import pytest
+
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding
-
 from jwt_rsa.keygen import main as keygen
 from jwt_rsa.rsa import generate_rsa, load_private_key, load_public_key
 from jwt_rsa.verify import main as verify

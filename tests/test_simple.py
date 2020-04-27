@@ -5,9 +5,9 @@ import time
 from itertools import product
 
 import pytest
+
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
-
 from jwt.exceptions import InvalidAlgorithmError, InvalidSignatureError
 from jwt_rsa import rsa
 from jwt_rsa.token import JWT
