@@ -1,2 +1,2 @@
-pyjwt
+pyjwt~=1.0
 cryptography
