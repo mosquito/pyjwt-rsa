@@ -1,49 +1,42 @@
 import json
-import logging
-import os
 import sys
+from types import SimpleNamespace
 
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import padding
-from jwt_rsa.rsa import load_private_key, load_public_key
+from .rsa import generate_rsa, load_private_key, load_public_key
+from .token import JWT
 
 
-def main() -> None:
-    logging.basicConfig(level=logging.INFO)
+def main(arguments: SimpleNamespace) -> None:
+    if arguments.private_key:
+        jwt = JWT(private_key=load_private_key(arguments.private_key))
+    elif arguments.public_key:
+        jwt = JWT(public_key=load_public_key(arguments.public_key))
+    elif not arguments.verify:
+        jwt = JWT(*generate_rsa(1024))
+    else:
+        print("Either private or public key must be provided", file=sys.stderr)
+        exit(1)
 
-    logging.info("Awaiting JSON on stdin...")
-    data = json.load(sys.stdin)
+    if arguments.interactive:
+        token = input("Enter JWT token: ")
+    else:
+        token = sys.stdin.read()
 
-    public_key = load_public_key(data["public"])
-    private_key = load_private_key(data["private"])
-
-    payload = os.urandom(1024 * 16)
-
-    signature = private_key.sign(
-        payload,
-        padding.PSS(
-            mgf=padding.MGF1(hashes.SHA256()),
-            salt_length=padding.PSS.MAX_LENGTH,
+    print("\nDecoded token:\n")
+    print(
+        json.dumps(
+            jwt.decode(
+                token,
+                verify=arguments.verify,
+                options=dict(
+                    verify_signature=arguments.verify,
+                    verify_exp=arguments.verify,
+                    verify_nbf=arguments.verify,
+                    verify_iat=arguments.verify,
+                    verify_aud=False,
+                ),
+            ),
+            indent=1,
+            sort_keys=True,
         ),
-        hashes.SHA256(),
     )
-
-    logging.info("Signing OK")
-
-    result = public_key.verify(
-        signature,
-        payload,
-        padding.PSS(
-            mgf=padding.MGF1(hashes.SHA256()),
-            salt_length=padding.PSS.MAX_LENGTH,
-        ),
-        hashes.SHA256(),
-    )
-
-    assert result is None
-
-    logging.info("Verifying OK")
-
-
-if __name__ == "__main__":
-    main()

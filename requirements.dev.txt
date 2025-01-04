@@ -1,6 +1,0 @@
-coverage!=4.3
-mypy~=0.770
-pylama~=7.7
-pytest~=5.0
-pytest-cov~=2.7.0
-tox>=2.4

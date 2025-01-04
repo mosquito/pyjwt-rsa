@@ -6,17 +6,15 @@ insert_final_newline = true
 charset = utf-8
 trim_trailing_whitespace = true
 
-[*.{py,yml}]
+[*.{py,yml,md}]
 indent_style = space
 
 [*.py]
 indent_size = 4
+max_line_length = 119
 
-[docs/**.py]
-max_line_length = 80
-
-[*.rst]
-indent_size = 3
+[*.md]
+indent_size = 4
 
 [Makefile]
 indent_style = tab

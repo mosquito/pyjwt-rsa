@@ -1,56 +1,48 @@
-import argparse
-import base64
-import json
+import sys
+from pathlib import Path
+from types import SimpleNamespace
 
-from cryptography.hazmat.primitives import serialization
-
+from .convert import convert
 from .rsa import generate_rsa
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-b", "--bits", dest="bits", type=int, default=2048)
-    parser.add_argument("-P", "--pem", dest="pem", action="store_true")
+def main(arguments: SimpleNamespace) -> None:
+    key_pair = generate_rsa(arguments.bits)
 
-    arguments = parser.parse_args()
+    if not arguments.force:
+        if arguments.save_public and arguments.save_public.exists():
+            print("Public key file already exists, use --force to overwrite. Not saving.", file=sys.stderr)
+            arguments.save_public = None
 
-    private_key, public_key = generate_rsa(arguments.bits)
+        if arguments.save_private and arguments.save_private.exists():
+            print("Private key file already exists, use --force to overwrite. Not saving.", file=sys.stderr)
+            arguments.save_private = None
 
-    if arguments.pem:
-        print(
-            private_key.private_bytes(
-                encoding=serialization.Encoding.PEM,
-                encryption_algorithm=serialization.NoEncryption(),
-                format=serialization.PrivateFormat.PKCS8,
-            ).decode(),
-        )
-        print(
-            public_key.public_bytes(
-                encoding=serialization.Encoding.PEM,
-                format=serialization.PublicFormat.PKCS1,
-            ).decode(),
-        )
+    if isinstance(arguments.save_private, Path) and not arguments.save_public:
+        save_public = arguments.save_private.with_name(arguments.save_private.stem + ".pub")
+        if arguments.force or not save_public.exists():
+            arguments.save_public = save_public
+            print("Public key file not specified, saving public key to", save_public, file=sys.stderr)
+
+    public_data, private_data = convert(
+        key_pair.private,
+        key_pair.public,
+        arguments.format,
+        arguments.pretty,
+    )
+
+    if arguments.save_public:
+        print("Saving public key to", arguments.save_public, "in PEM format", file=sys.stderr)
+        with open(arguments.save_public, "w") as fp:
+            fp.write(public_data)
     else:
-        print(
-            json.dumps(
-                {
-                    "private": base64.b64encode(
-                        private_key.private_bytes(
-                            encoding=serialization.Encoding.DER,
-                            encryption_algorithm=serialization.NoEncryption(),
-                            format=serialization.PrivateFormat.PKCS8,
-                        ),
-                    ).decode(),
-                    "public": base64.b64encode(
-                        public_key.public_bytes(
-                            encoding=serialization.Encoding.DER,
-                            format=serialization.PublicFormat.PKCS1,
-                        ),
-                    ).decode(),
-                }, indent="\t",
-            ),
-        )
+        print("Public key in", arguments.format, "format:", file=sys.stderr)
+        print(public_data)
 
-
-if __name__ == "__main__":
-    main()
+    if arguments.save_private:
+        print("Saving private key to", arguments.save_private, "in PEM format", file=sys.stderr)
+        with open(arguments.save_private, "w") as fp:
+            fp.write(private_data)
+    else:
+        print("Private key in", arguments.format, "format:", file=sys.stderr)
+        print(private_data)

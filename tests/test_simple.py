@@ -5,10 +5,10 @@ import time
 from itertools import product
 
 import pytest
-
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 from jwt.exceptions import InvalidAlgorithmError, InvalidSignatureError
+
 from jwt_rsa import rsa
 from jwt_rsa.token import JWT
 
@@ -99,18 +99,17 @@ def test_jwt_token_invalid_expiration():
         jwt.encode(foo="bar", expired=None, nbf=None)
 
 
-def test_decode_only_ability():
+def test_encode_and_decode_with_private_key():
     bits = 2048
     key, public = rsa.generate_rsa(bits)
 
     jwt = JWT(key)
     token = jwt.encode(foo="bar")
 
-    with pytest.raises(RuntimeError):
-        jwt.decode(token)
+    jwt.decode(token)
 
 
-def test_encode_only_ability():
+def test_decode_only_ability():
     bits = 2048
     key, public = rsa.generate_rsa(bits)
 
