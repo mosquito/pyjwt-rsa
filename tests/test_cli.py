@@ -93,6 +93,73 @@ def test_pem_format(capsys):
     )
 
 
+def test_keygen_no_force(capsys, tmp_path):
+    private_path = tmp_path / "private.pem"
+    public_path = tmp_path / "public.pem"
+
+    keygen(
+        parser.parse_args([
+            "keygen", "-o", "pem",
+            "-K", str(private_path), "-k", str(public_path),
+        ])
+    )
+
+    assert private_path.exists()
+    assert public_path.exists()
+
+    public_content = public_path.read_text()
+    private_content = private_path.read_text()
+
+    assert public_content
+    assert private_content
+
+    # Try to generate keys again buy don't overwrite existing
+    keygen(
+        parser.parse_args([
+            "keygen", "-o", "pem",
+            "-K", str(private_path), "-k", str(public_path),
+        ])
+    )
+
+    assert public_content == public_path.read_text()
+    assert private_content == private_path.read_text()
+
+    keygen(
+        parser.parse_args([
+            "keygen", "-o", "pem", "-f",
+            "-K", str(private_path), "-k", str(public_path),
+        ])
+    )
+
+    assert public_content != public_path.read_text()
+    assert private_content != private_path.read_text()
+
+
+def test_keygen_public_key_auto_naming(capsys, tmp_path):
+    private_path = tmp_path / "key"
+    public_path = tmp_path / "key.pub"
+    keygen(parser.parse_args(["keygen", "-o", "pem", "-K", str(private_path)]))
+
+    assert private_path.exists()
+    assert public_path.exists()
+
+    public_content = public_path.read_text()
+    private_content = private_path.read_text()
+
+    assert public_content
+    assert private_content
+
+    private_path.unlink()
+
+    keygen(parser.parse_args(["keygen", "-o", "pem", "-K", str(private_path)]))
+
+    assert private_path.exists()
+    assert public_path.exists()
+
+    assert public_content == public_path.read_text()
+    assert private_content != private_path.read_text()
+
+
 @pytest.mark.skip(reason="TODO")
 def test_rsa_verify(capsys):
     with mock.patch("sys.argv", ["jwt-rsa", "keygen"]):

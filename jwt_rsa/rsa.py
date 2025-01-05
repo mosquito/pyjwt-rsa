@@ -80,13 +80,19 @@ def load_jwk_private_key(jwk: RSAJWKPrivateKey) -> RSAPrivateKey:
     return private_numbers.private_key(default_backend())
 
 
-def load_jwk(jwk_str: str) -> KeyPair:
-    jwk = json.loads(jwk_str)
-    if "d" in jwk:  # Private key
-        private_key = load_jwk_private_key(jwk)
+def load_jwk(jwk: Union[RSAJWKPublicKey, RSAJWKPrivateKey, str]) -> KeyPair:
+    jwk_dict: Union[RSAJWKPublicKey, RSAJWKPrivateKey]
+
+    if isinstance(jwk, str):
+        jwk_dict = json.loads(jwk)
+    else:
+        jwk_dict = jwk
+
+    if "d" in jwk_dict:  # Private key
+        private_key = load_jwk_private_key(jwk_dict)    # type: ignore
         public_key = private_key.public_key()
     else:  # Public key
-        public_key = load_jwk_public_key(jwk)
+        public_key = load_jwk_public_key(jwk_dict)   # type: ignore
         private_key = None
 
     return KeyPair(private=private_key, public=public_key)
@@ -107,8 +113,7 @@ def rsa_to_jwk(
 @overload
 def rsa_to_jwk(    # type: ignore[overload-cannot-match]
     key: RSAPrivateKey, *, kid: str = "", alg: AlgorithmType = "RS256", use: str = "sig",
-) -> RSAJWKPrivateKey:
-    ...
+) -> RSAJWKPrivateKey: ...
 
 
 def rsa_to_jwk(

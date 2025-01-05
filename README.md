@@ -136,15 +136,15 @@ jwt-rsa keygen [options]
 
 **Options:**
 
-- `-b, --bits`: Number of bits for the RSA key (default: 2048). Choices: 1024, 2048, 4096, 8192.
+- `-b`, `--bits`: Number of bits for the RSA key (default: 2048). Choices: 1024, 2048, 4096, 8192.
 - `--kid`: Key ID. If not provided, one will be generated.
-- `-a, --algorithm`: Algorithm to use (`RS256`, `RS384`, `RS512`). Default: `RS512`.
-- `-u, --use`: Key usage (`sig` for signature, `enc` for encryption). Default: `sig`.
-- `-o, --format`: Output format (`pem`, `jwk`, `base64`). Default: `jwk`.
-- `-r, --raw`: Output raw JSON without indentation.
-- `-k, --save-public`: Path to save the public key.
-- `-K, --save-private`: Path to save the private key.
-- `-f, --force`: Overwrite existing keys if they exist.
+- `-a`, `--algorithm`: Algorithm to use (`RS256`, `RS384`, `RS512`). Default: `RS512`.
+- `-u`, `--use`: Key usage (`sig` for signature, `enc` for encryption). Default: `sig`.
+- `-o`, `--format`: Output format (`pem`, `jwk`, `base64`). Default: `jwk`.
+- `-r`, `--raw`: Output raw JSON without indentation.
+- `-k`, `--save-public`: Path to save the public key.
+- `-K`, `--save-private`: Path to save the private key.
+- `-f`, `--force`: Overwrite existing keys if they exist.
 
 **Examples:**
 
@@ -212,8 +212,8 @@ jwt-rsa testkey -K PRIVATE_KEY_PATH -k PUBLIC_KEY_PATH
 
 **Options:**
 
-- `-K, --private-key`: Path to the private key (required).
-- `-k, --public-key`: Path to the public key (required).
+- `-K`, `--private-key`: Path to the private key (required).
+- `-k`, `--public-key`: Path to the public key (required).
 
 **Examples:**
 
@@ -238,9 +238,9 @@ jwt-rsa pubkey -K PRIVATE_KEY_PATH [options]
 
 **Options:**
 
-- `-K, --private-key`: Path to the private key (required).
-- `-o, --format`: Output format (`pem`, `jwk`, `base64`). Default: `jwk`.
-- `-r, --raw`: Output raw JSON without indentation.
+- `-K`, `--private-key`: Path to the private key (required).
+- `-o`, `--format`: Output format (`pem`, `jwk`, `base64`). Default: `jwk`.
+- `-r`, `--raw`: Output raw JSON without indentation.
 
 **Examples:**
 
@@ -263,11 +263,11 @@ jwt-rsa issue -K PRIVATE_KEY_PATH [options]
 
 **Options:**
 
-- `-K, --private-key`: Path to the private JWT key (required).
+- `-K`, `--private-key`: Path to the private JWT key (required).
 - `--expired`: Token expiration time in seconds (default: `2678400` seconds, which is 31 days).
 - `--nbf`: "Not Before" claim in seconds (default: `-30`).
-- `-I, --no-interactive`: Disable interactive mode. By default, interactive mode is enabled.
-- `-e, --editor`: Editor to use in interactive mode. Defaults to the `EDITOR` environment variable or `vim`.
+- `-I`, `--no-interactive`: Disable interactive mode. By default, interactive mode is enabled.
+- `-e`, `--editor`: Editor to use in interactive mode. Defaults to the `EDITOR` environment variable or `vim`.
 
 **Examples:**
 
@@ -277,7 +277,8 @@ Issue a JWT token with default expiration and interactive mode:
 jwt-rsa issue -K ./private.pem
 ```
 
-By default will be opened the default editor to edit the claims, the format is python dictionary, with comments and pre-filled values:
+By default will be opened the default editor to edit the claims, the format is python dictionary, with comments and
+pre-filled values:
 
 ```python
 # This modules functions and constants are available:
@@ -323,6 +324,8 @@ $ echo '{"foo": "bar"}' | jwt-rsa issue -K /tmp/key -I --expired 3600
 eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJiYXIiLCJleHAiOjE3Mzg2MzAwNDcsIm5iZiI6MTczNTk1MTYyN30.HRCQ
 ```
 
+In non interactive mode, the input must be a JSON object with the claims to issue the token.
+
 #### `verify`
 
 Parse and verify a JWT token.
@@ -335,10 +338,10 @@ jwt-rsa verify [options] TOKEN
 
 **Options:**
 
-- `-K, --private-key`: Path to the private key.
-- `-k, --public-key`: Path to the public key. If ommited, the public key will be extracted from the private key.
-- `-V, --no-verify`: Do not verify the token's signature.
-- `-I, --no-interactive`: Disable interactive mode. By default, interactive mode is enabled.
+- `-K`, `--private-key`: Path to the private key.
+- `-k`, `--public-key`: Path to the public key. If ommited, the public key will be extracted from the private key.
+- `-V`, `--no-verify`: Do not verify the token's signature.
+- `-I`, `--no-interactive`: Disable interactive mode. By default, interactive mode is enabled.
 
 **Examples:**
 
@@ -369,12 +372,12 @@ jwt-rsa convert PRIVATE_KEY_PATH [options]
 **Options:**
 
 - `private_key`: Path to the source private key (positional argument).
-- `-k, --save-public`: Path to save the converted public key. If omitted,
+- `-k`, `--save-public`: Path to save the converted public key. If omitted,
   the public key will be saved to the same directory as the private key with a `.pub` extension.
-- `-K, --save-private`: Path to save the converted private key.
-- `-o, --format`: Output format (`pem`, `jwk`, `base64`). Default: `jwk`.
-- `-f, --force`: Overwrite existing keys if they exist.
-- `-r, --raw`: Output raw JSON without indentation.
+- `-K`, `--save-private`: Path to save the converted private key.
+- `-o`, `--format`: Output format (`pem`, `jwk`, `base64`). Default: `jwk`.
+- `-f`, `--force`: Overwrite existing keys if they exist.
+- `-r`, `--raw`: Output raw JSON without indentation.
 
 **Examples:**
 

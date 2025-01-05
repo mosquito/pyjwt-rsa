@@ -34,25 +34,24 @@ class JWT:
 
     def __init__(
         self,
-        private_key: Optional[RSAPrivateKey] = None,
-        public_key: Optional[RSAPublicKey] = None,
-        expires: Optional[int] = None,
+        key: Optional[Union[RSAPrivateKey, RSAPublicKey]],
+        *, expires: Optional[int] = None,
         nbf_delta: Optional[int] = None,
         algorithm: AlgorithmType = "RS512",
         algorithms: Sequence[AlgorithmType] = ALGORITHMS,
         options: Optional[Dict[str, Any]] = None,
     ):
-
         self.__public_key: RSAPublicKey
-        self.__private_key: Optional[RSAPrivateKey] = private_key
+        self.__private_key: Optional[RSAPrivateKey]
 
-        if public_key is None:
-            if isinstance(self.__private_key, RSAPrivateKey):
-                self.__public_key = self.__private_key.public_key()
-            else:
-                raise ValueError("You must provide either a public or private key")
+        if isinstance(key, RSAPrivateKey):
+            self.__public_key = key.public_key()
+            self.__private_key = key
+        elif isinstance(key, RSAPublicKey):
+            self.__public_key = key
+            self.__private_key = None
         else:
-            self.__public_key = public_key
+            raise ValueError("You must provide either a public or private key")
 
         self.__jwt = PyJWT(options)
         self.__expires = expires or self.DEFAULT_EXPIRATION
