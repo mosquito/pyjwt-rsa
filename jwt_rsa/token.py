@@ -1,10 +1,13 @@
 import time
 from datetime import datetime, timedelta
 from operator import add, sub
-from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, TypeVar, Union
+from typing import (
+    TYPE_CHECKING, Any, Callable, Dict, Optional, Sequence, TypeVar, Union,
+)
 
 from jwt import PyJWT
-from jwt_rsa.rsa import RSAPrivateKey, RSAPublicKey
+
+from .types import AlgorithmType, RSAPrivateKey, RSAPublicKey
 
 
 if TYPE_CHECKING:
@@ -13,40 +16,51 @@ if TYPE_CHECKING:
 else:
     DateType = Union[timedelta, datetime, float, int, type(Ellipsis)]
 
+
 R = TypeVar("R")
+DAY = 86400
 
 
 class JWT:
     __slots__ = (
         "__private_key", "__public_key", "__jwt",
         "__expires", "__nbf_delta", "__algorithm",
+        "__algorithms",
     )
 
-    DEFAULT_EXPIRATION = 86400 * 30  # one month
+    DEFAULT_EXPIRATION = 31 * DAY  # one month
     NBF_DELTA = 20
-    ALGORITHMS = tuple({
-        "RS256", "RS384", "RS512", "ES256", "ES384",
-        "ES521", "ES512", "PS256", "PS384", "PS512",
-    })
+    ALGORITHMS = tuple(AlgorithmType.__args__)
 
     def __init__(
         self,
-        private_key: Optional[RSAPrivateKey] = None,
-        public_key: Optional[RSAPublicKey] = None,
-        expires: Optional[int] = None,
+        key: Optional[Union[RSAPrivateKey, RSAPublicKey]],
+        *, expires: Optional[int] = None,
         nbf_delta: Optional[int] = None,
-        algorithm: str = "RS512",
+        algorithm: AlgorithmType = "RS512",
+        algorithms: Sequence[AlgorithmType] = ALGORITHMS,
+        options: Optional[Dict[str, Any]] = None,
     ):
+        self.__public_key: RSAPublicKey
+        self.__private_key: Optional[RSAPrivateKey]
 
-        self.__private_key = private_key
-        self.__public_key = public_key
-        self.__jwt = PyJWT(algorithms=self.ALGORITHMS)
+        if isinstance(key, RSAPrivateKey):
+            self.__public_key = key.public_key()
+            self.__private_key = key
+        elif isinstance(key, RSAPublicKey):
+            self.__public_key = key
+            self.__private_key = None
+        else:
+            raise ValueError("You must provide either a public or private key")
+
+        self.__jwt = PyJWT(options)
         self.__expires = expires or self.DEFAULT_EXPIRATION
         self.__nbf_delta = nbf_delta or self.NBF_DELTA
         self.__algorithm = algorithm
+        self.__algorithms = list(algorithms)
 
+    @staticmethod
     def _date_to_timestamp(
-        self,
         value: DateType,
         default: Callable[[], R],
         timedelta_func: Callable[[float, float], int] = add,
@@ -66,7 +80,7 @@ class JWT:
         self,
         expired: DateType = ...,
         nbf: DateType = ...,
-        **claims: int
+        **claims: Any,
     ) -> str:
         if not self.__private_key:
             raise RuntimeError("Can't encode without private key")
@@ -93,31 +107,15 @@ class JWT:
             claims,
             self.__private_key,
             algorithm=self.__algorithm,
-        ).decode()
+        )
 
     def decode(
-        self, token: str, verify: bool = True, **kwargs: Any
+        self, token: str, verify: bool = True, **kwargs: Any,
     ) -> Dict[str, Any]:
-        if not self.__public_key:
-            raise RuntimeError("Can't decode without public key")
-
         return self.__jwt.decode(
             token,
             key=self.__public_key,
             verify=verify,
-            algorithms=self.ALGORITHMS,
+            algorithms=self.__algorithms,
             **kwargs,
         )
-
-
-if __name__ == "__main__":
-    from jwt_rsa.rsa import generate_rsa
-
-    key, public = generate_rsa(2048)
-
-    jwt = JWT(key, public)
-
-    token = jwt.encode()
-
-    print("Token", token)
-    print("Content", jwt.decode(token))

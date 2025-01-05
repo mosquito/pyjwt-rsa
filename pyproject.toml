@@ -1,0 +1,77 @@
+[tool.poetry]
+name = "pyjwt-rsa"
+version = "1.0.0"
+description = "RSA helpers for PyJWT"
+authors = ["Dmitry Orlov <me@mosquito.su>"]
+license = "MIT"
+readme = "README.md"
+classifiers = [
+    "Intended Audience :: Developers",
+    "Natural Language :: Russian",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.5",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Security",
+    "Typing :: Typed",
+]
+packages = [
+    { include = "jwt_rsa", from = "." }
+]
+
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pyjwt = "^2.10"
+cryptography = "^44.0"
+
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.14.1"
+pylama = {extras = ["toml"], version = "^8.4.1"}
+pytest = "^8.3.4"
+pytest-cov = "^6.0.0"
+setuptools = "^75.6.0"
+
+[tool.poetry.scripts]
+jwt-rsa = "jwt_rsa.cli:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pylama]
+linters = "pycodestyle,pyflakes,mccabe,mccabe,mypy"
+
+[tool.pylama.linter.pycodestyle]
+max_line_length = 119
+ignore = "E704"
+
+[tool.mypy]
+follow_imports = "silent"
+strict_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+disallow_any_generics = true
+check_untyped_defs = true
+no_implicit_reexport = true
+warn_unused_configs = true
+disallow_subclassing_any = true
+disallow_incomplete_defs = true
+disallow_untyped_decorators = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+ignore_errors = true
+
+[tool.pytest.ini_options]
+log_cli = true
+addopts = "--cov jwt_rsa --cov-report term-missing --doctest-modules --pylama jwt_rsa --pylama tests"

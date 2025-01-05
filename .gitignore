@@ -139,4 +139,4 @@ fabric.properties
 
 /*/version.py
 
-.mypy_cache/*
+.*_cache/
