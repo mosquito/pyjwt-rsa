@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from typing import Literal
 
 from cryptography.hazmat.primitives import serialization
@@ -11,10 +12,11 @@ from cryptography.hazmat.primitives.asymmetric.rsa import (
 
 
 AlgorithmType = Literal["RS256", "RS384", "RS512"]
-
+DateType = timedelta | datetime | float | int
 
 __all__ = (
     "AlgorithmType",
+    "DateType",
     "RSAPrivateKey",
     "RSAPublicKey",
     "serialization",
