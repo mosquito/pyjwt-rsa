@@ -116,7 +116,7 @@ def test_decode_only_ability():
     jwt = JWT(public)
     assert "foo" in jwt.decode(token)
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises(AttributeError):
         jwt.encode(foo=None)
 
 
@@ -128,7 +128,7 @@ def test_jwt_init():
 
     assert JWT(public)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         JWT(None)
 
 

@@ -1,8 +1,6 @@
 import io
 import json
 import os
-from io import StringIO
-from unittest import mock
 
 import pytest
 from cryptography.exceptions import InvalidSignature
@@ -13,14 +11,11 @@ from cryptography.hazmat.primitives.asymmetric import padding
 from jwt_rsa.cli import parser
 from jwt_rsa.key_tester import main as verify
 from jwt_rsa.keygen import main as keygen
-from jwt_rsa.rsa import (
-    generate_rsa, load_private_key, load_public_key, rsa_to_jwk,
-)
+from jwt_rsa.rsa import load_private_key, load_public_key
 
 
 def test_rsa_keygen(capsys):
-    with mock.patch("sys.argv", ["jwt-rsa", "keygen", "--raw", "-o", "jwk"]):
-        keygen(parser.parse_args())
+    keygen(parser.parse_args(["keygen", "--raw", "-o", "jwk"]))
 
     stdout, stderr = capsys.readouterr()
 
@@ -57,8 +52,7 @@ def test_rsa_keygen(capsys):
 
 
 def test_pem_format(capsys):
-    with mock.patch("sys.argv", ["jwt-rsa", "keygen", "-o", "pem"]):
-        keygen(parser.parse_args())
+    keygen(parser.parse_args(["keygen", "-o", "pem"]))
 
     stdout, stderr = capsys.readouterr()
 
@@ -160,29 +154,27 @@ def test_keygen_public_key_auto_naming(capsys, tmp_path):
     assert private_content != private_path.read_text()
 
 
-@pytest.mark.skip(reason="TODO")
-def test_rsa_verify(capsys):
-    with mock.patch("sys.argv", ["jwt-rsa", "keygen"]):
-        keygen(parser.parse_args())
+@pytest.mark.parametrize("fmt", ["jwk", "pem", "base64"])
+def test_rsa_verify(fmt, capsys, tmp_path):
+    private_path = tmp_path / "private"
+    public_path = tmp_path / "public"
 
+    keygen(parser.parse_args(["keygen", "-o", fmt, "-K", str(private_path), "-k", str(public_path)]))
+    verify(parser.parse_args(["testkey", "-K", str(private_path), "-k", str(public_path)]))
     stdout, stderr = capsys.readouterr()
+    assert "Signing OK" in stderr
+    assert "Verifying OK" in stderr
 
-    with mock.patch("sys.stdin", StringIO(stdout)):
-        verify(parser.parse_args())
 
-
-@pytest.mark.skip(reason="TODO")
-def test_rsa_verify_bad_key():
-    private1, public1 = generate_rsa()
-    private2, public2 = generate_rsa()
-
-    data = json.dumps(
-        {
-            "private_jwk": rsa_to_jwk(private1),
-            "public_jwk": rsa_to_jwk(public2),
-        }, indent=" ", sort_keys=True,
+@pytest.mark.parametrize("fmt", ["jwk", "pem", "base64"])
+def test_rsa_verify_bad_key(fmt, capsys, tmp_path):
+    keys = (
+        (tmp_path / "private1", tmp_path / "public1"),
+        (tmp_path / "private2", tmp_path / "public2"),
     )
 
-    with mock.patch("sys.stdin", StringIO(data)):
-        with pytest.raises(InvalidSignature):
-            verify(parser.parse_args())
+    for private_path, public_path in keys:
+        keygen(parser.parse_args(["keygen", "-o", fmt, "-K", str(private_path), "-k", str(public_path)]))
+
+    with pytest.raises(InvalidSignature):
+        verify(parser.parse_args(["testkey", "-K", str(keys[0][0]), "-k", str(keys[1][1])]))
