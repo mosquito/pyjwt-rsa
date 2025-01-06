@@ -69,7 +69,7 @@ TEMPLATE = """# THIS FILE SUPPORTS COMMENTS AND TRAILING COMMAS
 
 
 def main(arguments: SimpleNamespace) -> None:
-    jwt = JWT(private_key=load_private_key(arguments.private_key))
+    jwt = JWT(load_private_key(arguments.private_key))
 
     whoami = pwd.getpwuid(os.getuid())
 

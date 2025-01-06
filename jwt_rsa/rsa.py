@@ -1,7 +1,7 @@
 import base64
 import json
 from pathlib import Path
-from typing import NamedTuple, Optional, TypedDict, Union, overload
+from typing import NamedTuple, Optional, TypedDict, overload
 
 from cryptography.hazmat.backends import default_backend
 
@@ -11,6 +11,11 @@ from .types import (
 
 
 class KeyPair(NamedTuple):
+    private: RSAPrivateKey
+    public: RSAPublicKey
+
+
+class JWKKeyPair(NamedTuple):
     private: Optional[RSAPrivateKey]
     public: RSAPublicKey
 
@@ -80,8 +85,8 @@ def load_jwk_private_key(jwk: RSAJWKPrivateKey) -> RSAPrivateKey:
     return private_numbers.private_key(default_backend())
 
 
-def load_jwk(jwk: Union[RSAJWKPublicKey, RSAJWKPrivateKey, str]) -> KeyPair:
-    jwk_dict: Union[RSAJWKPublicKey, RSAJWKPrivateKey]
+def load_jwk(jwk: RSAJWKPublicKey | RSAJWKPrivateKey | str) -> JWKKeyPair:
+    jwk_dict: RSAJWKPublicKey | RSAJWKPrivateKey
 
     if isinstance(jwk, str):
         jwk_dict = json.loads(jwk)
@@ -92,10 +97,10 @@ def load_jwk(jwk: Union[RSAJWKPublicKey, RSAJWKPrivateKey, str]) -> KeyPair:
         private_key = load_jwk_private_key(jwk_dict)    # type: ignore
         public_key = private_key.public_key()
     else:  # Public key
-        public_key = load_jwk_public_key(jwk_dict)   # type: ignore
+        public_key = load_jwk_public_key(jwk_dict)
         private_key = None
 
-    return KeyPair(private=private_key, public=public_key)
+    return JWKKeyPair(private=private_key, public=public_key)
 
 
 def int_to_base64url(value: int) -> str:
@@ -111,19 +116,19 @@ def rsa_to_jwk(
 
 
 @overload
-def rsa_to_jwk(    # type: ignore[overload-cannot-match]
+def rsa_to_jwk(
     key: RSAPrivateKey, *, kid: str = "", alg: AlgorithmType = "RS256", use: str = "sig",
 ) -> RSAJWKPrivateKey: ...
 
 
 def rsa_to_jwk(
-    key: Union[RSAPrivateKey, RSAPublicKey],
+    key: RSAPrivateKey | RSAPublicKey,
     *,
     kid: str = "",
     alg: AlgorithmType = "RS256",
     use: str = "sig",
     kty: str = "RSA",
-) -> Union[RSAJWKPublicKey, RSAJWKPrivateKey]:
+) -> RSAJWKPublicKey | RSAJWKPrivateKey:
     if isinstance(key, RSAPublicKey):
         public_numbers = key.public_numbers()
         private_numbers = None
@@ -161,12 +166,14 @@ def rsa_to_jwk(
     )
 
 
-def load_private_key(data: Union[str, RSAJWKPrivateKey, Path]) -> RSAPrivateKey:
+def load_private_key(data: str | RSAJWKPrivateKey | Path) -> RSAPrivateKey:
     if isinstance(data, Path):
         data = data.read_text()
     if isinstance(data, str):
         if data.startswith("-----BEGIN "):
-            return serialization.load_pem_private_key(data.encode(), None, default_backend())
+            result = serialization.load_pem_private_key(data.encode(), None, default_backend())
+            assert isinstance(result, RSAPrivateKey)
+            return result
         if data.strip().startswith("{"):
             return load_jwk_private_key(json.loads(data))
     if isinstance(data, dict):
@@ -177,12 +184,14 @@ def load_private_key(data: Union[str, RSAJWKPrivateKey, Path]) -> RSAPrivateKey:
     return key
 
 
-def load_public_key(data: Union[str, RSAJWKPublicKey, Path]) -> RSAPublicKey:
+def load_public_key(data: str | RSAJWKPublicKey | Path) -> RSAPublicKey:
     if isinstance(data, Path):
         data = data.read_text()
     if isinstance(data, str):
         if data.startswith("-----BEGIN "):
-            return serialization.load_pem_public_key(data.encode(), default_backend())
+            result = serialization.load_pem_public_key(data.encode(), default_backend())
+            assert isinstance(result, RSAPublicKey)
+            return result
         if data.strip().startswith("{"):
             return load_jwk_public_key(json.loads(data))
     if isinstance(data, dict):

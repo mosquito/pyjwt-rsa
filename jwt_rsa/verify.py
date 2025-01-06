@@ -3,16 +3,18 @@ import sys
 from types import SimpleNamespace
 
 from .rsa import generate_rsa, load_private_key, load_public_key
-from .token import JWT
+from .token import JWT, JWTSigner, JWTDecoder
 
 
 def main(arguments: SimpleNamespace) -> None:
+    jwt: JWTSigner | JWTDecoder
     if arguments.private_key:
-        jwt = JWT(private_key=load_private_key(arguments.private_key))
+        jwt = JWT(load_private_key(arguments.private_key))
     elif arguments.public_key:
-        jwt = JWT(public_key=load_public_key(arguments.public_key))
+        jwt = JWT(load_public_key(arguments.public_key))
     elif not arguments.verify:
-        jwt = JWT(*generate_rsa(1024))
+        key_pair = generate_rsa(1024)
+        jwt = JWT(key_pair.private)
     else:
         print("Either private or public key must be provided", file=sys.stderr)
         exit(1)

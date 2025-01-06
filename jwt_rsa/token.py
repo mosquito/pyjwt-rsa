@@ -2,34 +2,25 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from operator import add, sub
-from typing import (
-    TYPE_CHECKING, Any, Callable, Dict, Optional, Sequence, TypeVar, Union, overload,
-)
+from types import EllipsisType
+from typing import Any, Callable, Dict, Optional, Sequence, TypeVar, overload
 
 from jwt import PyJWT
 
-from .types import AlgorithmType, RSAPrivateKey, RSAPublicKey
-
-
-if TYPE_CHECKING:
-    # pylama:ignore=E0602
-    DateType = Union[timedelta, datetime, float, int, ellipsis]
-else:
-    DateType = Union[timedelta, datetime, float, int, type(Ellipsis)]
-
+from .types import AlgorithmType, RSAPrivateKey, RSAPublicKey, DateType
 
 R = TypeVar("R")
 DAY = 86400
 DEFAULT_EXPIRATION = timedelta(days=31).total_seconds()
 NBF_DELTA = 20
-ALGORITHMS = tuple(AlgorithmType.__args__)
+ALGORITHMS: Sequence[AlgorithmType] = ("RS256", "RS384", "RS512")
 
 
 def date_to_timestamp(
-    value: DateType,
+    value: DateType | EllipsisType,
     default: Callable[[], R],
     timedelta_func: Callable[[float, float], int] = add,
-) -> Union[int, float, R]:
+) -> int | float | R:
     if isinstance(value, timedelta):
         return timedelta_func(time.time(), value.total_seconds())
     elif isinstance(value, datetime):
@@ -46,8 +37,8 @@ def date_to_timestamp(
 class JWTDecoder:
     jwt: PyJWT = field(repr=False, compare=False)
     public_key: RSAPublicKey = field(repr=False, compare=True)
-    expires: Union[int, float]
-    nbf_delta: Union[int, float]
+    expires: int | float
+    nbf_delta: int | float
     algorithm: AlgorithmType
     algorithms: Sequence[AlgorithmType]
 
@@ -79,7 +70,7 @@ class JWTSigner(JWTDecoder):
         super(JWTDecoder, self).__setattr__('private_key', key)
         super().__init__(key.public_key(), options=options, **kwargs)
 
-    def encode(self, expired: DateType = ..., nbf: DateType = ..., **claims: Any) -> str:
+    def encode(self, expired: DateType | EllipsisType = ..., nbf: DateType | EllipsisType = ..., **claims: Any) -> str:
         claims.setdefault('exp', int(date_to_timestamp(expired, lambda: time.time() + self.expires)))
         claims.setdefault('nbf', int(date_to_timestamp(nbf, lambda: time.time() - self.nbf_delta, timedelta_func=sub)))
         return self.jwt.encode(claims, self.private_key, algorithm=self.algorithm)
@@ -97,7 +88,7 @@ def JWT(
 
 
 @overload
-def JWT(    # type: ignore[overload-cannot-match]
+def JWT(
     key: RSAPublicKey, *,
     options: dict[str, Any] | None = None,
     expires: int | float = DEFAULT_EXPIRATION,
@@ -108,15 +99,15 @@ def JWT(    # type: ignore[overload-cannot-match]
 
 
 def JWT(
-    key: Union[RSAPrivateKey, RSAPublicKey],
+    key: RSAPrivateKey | RSAPublicKey,
     *,
     options: dict[str, Any] | None = None,
     expires: int | float = DEFAULT_EXPIRATION,
     nbf_delta: int | float = NBF_DELTA,
     algorithm: AlgorithmType = "RS512",
     algorithms: Sequence[AlgorithmType] = ALGORITHMS,
-) -> Union[JWTSigner, JWTDecoder]:
-    kwargs = dict(
+) -> JWTSigner | JWTDecoder:
+    kwargs: dict[str, Any] = dict(
         expires=expires,
         nbf_delta=nbf_delta,
         algorithm=algorithm,

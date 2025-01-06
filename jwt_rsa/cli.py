@@ -2,9 +2,8 @@ import os
 from argparse import ArgumentParser
 from pathlib import Path
 
-from jwt_rsa.types import AlgorithmType
-
 from . import convert, issue, key_tester, keygen, pubkey, verify
+from .token import ALGORITHMS
 
 
 parser = ArgumentParser()
@@ -20,7 +19,7 @@ keygen_parser.add_argument(
     "--kid", dest="kid", type=str, default="", help="Key ID, will be generated if missing",
 )
 keygen_parser.add_argument(
-    "-a", "--algorithm", choices=AlgorithmType.__args__,
+    "-a", "--algorithm", choices=ALGORITHMS,
     help="Key ID, will be generated if missing", default="RS512",
 )
 keygen_parser.add_argument("-u", "--use", dest="use", type=str, default="sig", choices=["sig", "enc"])

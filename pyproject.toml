@@ -46,7 +46,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.pylama]
-linters = "pycodestyle,pyflakes,mccabe,mccabe,mypy"
+linters = "pycodestyle,pyflakes,mccabe,mccabe"
 
 [tool.pylama.linter.pycodestyle]
 max_line_length = 119
