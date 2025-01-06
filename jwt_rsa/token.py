@@ -7,7 +7,8 @@ from typing import Any, Callable, Dict, Optional, Sequence, TypeVar, overload
 
 from jwt import PyJWT
 
-from .types import AlgorithmType, RSAPrivateKey, RSAPublicKey, DateType
+from .types import AlgorithmType, DateType, RSAPrivateKey, RSAPublicKey
+
 
 R = TypeVar("R")
 DAY = 86400
@@ -51,12 +52,12 @@ class JWTDecoder:
         algorithm: AlgorithmType = "RS512",
         algorithms: Sequence[AlgorithmType] = ALGORITHMS,
     ):
-        super().__setattr__('public_key', key)
-        super().__setattr__('jwt', PyJWT(options))
-        super().__setattr__('expires', expires)
-        super().__setattr__('nbf_delta', nbf_delta)
-        super().__setattr__('algorithm', algorithm)
-        super().__setattr__('algorithms', algorithms)
+        super().__setattr__("public_key", key)
+        super().__setattr__("jwt", PyJWT(options))
+        super().__setattr__("expires", expires)
+        super().__setattr__("nbf_delta", nbf_delta)
+        super().__setattr__("algorithm", algorithm)
+        super().__setattr__("algorithms", algorithms)
 
     def decode(self, token: str, verify: bool = True, **kwargs: Any) -> Dict[str, Any]:
         return self.jwt.decode(token, key=self.public_key, verify=verify, algorithms=self.algorithms, **kwargs)
@@ -67,12 +68,12 @@ class JWTSigner(JWTDecoder):
     private_key: RSAPrivateKey = field(repr=False, compare=True)
 
     def __init__(self, key: RSAPrivateKey, *, options: Optional[Dict[str, Any]] = None, **kwargs: Any):
-        super(JWTDecoder, self).__setattr__('private_key', key)
+        super(JWTDecoder, self).__setattr__("private_key", key)
         super().__init__(key.public_key(), options=options, **kwargs)
 
     def encode(self, expired: DateType | EllipsisType = ..., nbf: DateType | EllipsisType = ..., **claims: Any) -> str:
-        claims.setdefault('exp', int(date_to_timestamp(expired, lambda: time.time() + self.expires)))
-        claims.setdefault('nbf', int(date_to_timestamp(nbf, lambda: time.time() - self.nbf_delta, timedelta_func=sub)))
+        claims.setdefault("exp", int(date_to_timestamp(expired, lambda: time.time() + self.expires)))
+        claims.setdefault("nbf", int(date_to_timestamp(nbf, lambda: time.time() - self.nbf_delta, timedelta_func=sub)))
         return self.jwt.encode(claims, self.private_key, algorithm=self.algorithm)
 
 

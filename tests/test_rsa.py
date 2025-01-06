@@ -11,8 +11,8 @@ from cryptography.hazmat.primitives.asymmetric import padding
 from jwt.exceptions import InvalidAlgorithmError, InvalidSignatureError
 
 from jwt_rsa import rsa
-from jwt_rsa.types import serialization
 from jwt_rsa.token import JWT
+from jwt_rsa.types import serialization
 
 
 def test_rsa_sign():
@@ -173,17 +173,21 @@ def test_load_public_key(tmp_path):
     private_path = tmp_path / "private.pem"
 
     with open(public_path, "wb") as fp:
-        fp.write(public.public_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PublicFormat.SubjectPublicKeyInfo,
-        ))
+        fp.write(
+            public.public_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PublicFormat.SubjectPublicKeyInfo,
+            ),
+        )
 
     with open(private_path, "wb") as fp:
-        fp.write(key.private_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PrivateFormat.PKCS8,
-            encryption_algorithm=serialization.NoEncryption(),
-        ))
+        fp.write(
+            key.private_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PrivateFormat.PKCS8,
+                encryption_algorithm=serialization.NoEncryption(),
+            ),
+        )
 
     assert rsa.load_public_key(public_path)
     assert rsa.load_public_key(public_path.read_text())

@@ -95,7 +95,7 @@ def test_keygen_no_force(capsys, tmp_path):
         parser.parse_args([
             "keygen", "-o", "pem",
             "-K", str(private_path), "-k", str(public_path),
-        ])
+        ]),
     )
 
     assert private_path.exists()
@@ -112,7 +112,7 @@ def test_keygen_no_force(capsys, tmp_path):
         parser.parse_args([
             "keygen", "-o", "pem",
             "-K", str(private_path), "-k", str(public_path),
-        ])
+        ]),
     )
 
     assert public_content == public_path.read_text()
@@ -122,7 +122,7 @@ def test_keygen_no_force(capsys, tmp_path):
         parser.parse_args([
             "keygen", "-o", "pem", "-f",
             "-K", str(private_path), "-k", str(public_path),
-        ])
+        ]),
     )
 
     assert public_content != public_path.read_text()

@@ -111,7 +111,7 @@ def int_to_base64url(value: int) -> str:
 
 @overload
 def rsa_to_jwk(
-    key: RSAPublicKey, *, kid: str = "", alg: AlgorithmType = "RS256", use: str = "sig"
+    key: RSAPublicKey, *, kid: str = "", alg: AlgorithmType = "RS256", use: str = "sig",
 ) -> RSAJWKPublicKey: ...
 
 

@@ -3,7 +3,7 @@ import sys
 from types import SimpleNamespace
 
 from .rsa import generate_rsa, load_private_key, load_public_key
-from .token import JWT, JWTSigner, JWTDecoder
+from .token import JWT, JWTDecoder, JWTSigner
 
 
 def main(arguments: SimpleNamespace) -> None:
