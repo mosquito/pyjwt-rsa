@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyjwt-rsa"
-version = "1.0.1"
+version = "1.1.0"
 description = "RSA helpers for PyJWT"
 authors = ["Dmitry Orlov <me@mosquito.su>"]
 license = "MIT"
