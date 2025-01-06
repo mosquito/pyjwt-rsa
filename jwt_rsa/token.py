@@ -45,7 +45,7 @@ def date_to_timestamp(
 @dataclass(frozen=True, init=False)
 class JWTDecoder:
     jwt: PyJWT = field(repr=False, compare=False)
-    public_key: RSAPublicKey = field(repr=False, compare=False)
+    public_key: RSAPublicKey = field(repr=False, compare=True)
     expires: Union[int, float]
     nbf_delta: Union[int, float]
     algorithm: AlgorithmType
@@ -73,7 +73,7 @@ class JWTDecoder:
 
 @dataclass(frozen=True, init=False)
 class JWTSigner(JWTDecoder):
-    private_key: RSAPrivateKey = field(repr=False, compare=False)
+    private_key: RSAPrivateKey = field(repr=False, compare=True)
 
     def __init__(self, key: RSAPrivateKey, *, options: Optional[Dict[str, Any]] = None, **kwargs: Any):
         super(JWTDecoder, self).__setattr__('private_key', key)
