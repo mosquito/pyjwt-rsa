@@ -284,7 +284,7 @@ pre-filled values:
 # This modules functions and constants are available:
 
 #  * DAY = 86400
-#  * HOSTNAME = 'NB-J2X12GGXQF'
+#  * HOSTNAME = 'localhost'
 #  * HOUR = 3600
 #  * YEAR = 31536000
 #  * datetime = <class 'datetime.datetime'>

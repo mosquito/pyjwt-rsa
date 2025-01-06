@@ -28,7 +28,7 @@ class JWT:
         "__algorithms",
     )
 
-    DEFAULT_EXPIRATION = 31 * DAY  # one month
+    DEFAULT_EXPIRATION = timedelta(days=31).total_seconds()
     NBF_DELTA = 20
     ALGORITHMS = tuple(AlgorithmType.__args__)
 
