@@ -73,6 +73,7 @@ TEMPLATE = """# THIS FILE SUPPORTS COMMENTS AND TRAILING COMMAS
 TIMEINTERVAL_EXP = re.compile(r"^((?P<is_interval>[+-])?(?P<value>[0-9]+)(?P<suffix>[smhdMy]?))+$")
 SUFFIXES = {"s": 1, "m": 60, "h": 3600, "d": 86400, "M": 2592000, "y": 31536000}
 
+
 def parse_interval(value: str) -> int:
     match = TIMEINTERVAL_EXP.match(value)
     if not match:
