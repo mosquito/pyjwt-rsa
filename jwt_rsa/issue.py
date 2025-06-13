@@ -69,7 +69,7 @@ TEMPLATE = """# THIS FILE SUPPORTS COMMENTS AND TRAILING COMMAS
 
 
 def main(arguments: SimpleNamespace) -> None:
-    jwt = JWT(load_private_key(arguments.private_key))
+    jwt = JWT(load_private_key(arguments.private_key), algorithm=arguments.algorithm)
 
     whoami = pwd.getpwuid(os.getuid())
 
@@ -94,25 +94,27 @@ def main(arguments: SimpleNamespace) -> None:
             preable += f"#  * {key} = {value!r}\n"
 
         with NamedTemporaryFile("wt", suffix=".py") as fp:
+            if arguments.interactive:
+                fp.write(
+                    TEMPLATE % {
+                        "exp": arguments.expired,
+                        "nbf": arguments.nbf,
+                        "preamble": preable,
+                    },
+                )
+                fp.flush()
 
-            fp.write(
-                TEMPLATE % {
-                    "exp": arguments.expired,
-                    "nbf": arguments.nbf,
-                    "preamble": preable,
-                },
-            )
-            fp.flush()
+                while True:
+                    check_call([arguments.editor, fp.name])
 
-            while True:
-                check_call([arguments.editor, fp.name])
-
-                try:
-                    claims = eval(open(fp.name).read(), globals, {})
-                    break
-                except (ValueError, TypeError) as exc:
-                    print(f"Error parsing JSON: {exc}", file=sys.stderr)
-                    input("Press Enter to try again... Press Ctrl+C to abort")
+                    try:
+                        claims = eval(open(fp.name).read(), globals, {})
+                        break
+                    except (ValueError, TypeError) as exc:
+                        print(f"Error parsing JSON: {exc}", file=sys.stderr)
+                        input("Press Enter to try again... Press Ctrl+C to abort")
+            else:
+                claims = json.load(sys.stdin)
     else:
         claims = json.loads(sys.stdin.read())
     print(jwt.encode(**claims))

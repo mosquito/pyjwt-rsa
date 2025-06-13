@@ -7,6 +7,10 @@ from .token import ALGORITHMS
 
 
 parser = ArgumentParser()
+parser.add_argument(
+    "-a", "--algorithm", choices=ALGORITHMS,
+    help="Algorithm for JWT keys", default="RS512"
+)
 
 subparsers = parser.add_subparsers(dest="command", required=True)
 
@@ -17,10 +21,6 @@ keygen_parser.add_argument(
 )
 keygen_parser.add_argument(
     "--kid", dest="kid", type=str, default="", help="Key ID, will be generated if missing",
-)
-keygen_parser.add_argument(
-    "-a", "--algorithm", choices=ALGORITHMS,
-    help="Key ID, will be generated if missing", default="RS512",
 )
 keygen_parser.add_argument("-u", "--use", dest="use", type=str, default="sig", choices=["sig", "enc"])
 keygen_parser.add_argument("-o", "--format", choices=["pem", "jwk", "base64"], default="jwk")
@@ -49,7 +49,7 @@ issue_parser.add_argument("--expired", help="Token expiration", type=int, defaul
 issue_parser.add_argument("--nbf", help="Token nbf claim", type=int, default=-30)
 issue_parser.add_argument(
     "-I", "--no-interactive", action="store_false", dest="interactive",
-    help="Interactive mode, open editor for claims",
+    help="No interactive mode, do not open editor for claims, just read JSON from stdin",
 )
 issue_parser.add_argument(
     "-e", "--editor", help="Editor to use in interactive mode",
