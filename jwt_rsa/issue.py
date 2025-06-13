@@ -1,7 +1,9 @@
+import argparse
 import json
 import os
 import platform
 import pwd
+import re
 import sys
 import time
 from datetime import datetime
@@ -68,8 +70,34 @@ TEMPLATE = """# THIS FILE SUPPORTS COMMENTS AND TRAILING COMMAS
 """
 
 
+TIMEINTERVAL_EXP = re.compile(r"^((?P<is_interval>[+-])?(?P<value>[0-9]+)(?P<suffix>[smhdMy]?))+$")
+SUFFIXES = {"s": 1, "m": 60, "h": 3600, "d": 86400, "M": 2592000, "y": 31536000}
+
+def parse_interval(value: str) -> int:
+    match = TIMEINTERVAL_EXP.match(value)
+    if not match:
+        raise argparse.ArgumentTypeError(f"Invalid time interval format: {value}")
+
+    groups = match.groupdict()
+    if groups["is_interval"] is not None:
+        seconds = int(groups["value"])
+        if groups["is_interval"] == "-":
+            seconds = -seconds
+        suffix = SUFFIXES.get(groups["suffix"], 1)
+        return int(seconds * suffix)
+    elif groups["is_interval"] is None and groups["suffix"]:
+        raise argparse.ArgumentTypeError("Invalid time interval format, missing sign: " + value)
+    else:
+        return int(int(groups["value"]))
+
+
 def main(arguments: SimpleNamespace) -> None:
-    jwt = JWT(load_private_key(arguments.private_key), algorithm=arguments.algorithm)
+    jwt = JWT(
+        load_private_key(arguments.private_key),
+        expires=arguments.expired,
+        nbf_delta=-arguments.nbf,
+        algorithm=arguments.algorithm
+    )
 
     whoami = pwd.getpwuid(os.getuid())
 
