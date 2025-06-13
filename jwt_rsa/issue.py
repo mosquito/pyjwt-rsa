@@ -1,7 +1,9 @@
+import argparse
 import json
 import os
 import platform
 import pwd
+import re
 import sys
 import time
 from datetime import datetime
@@ -68,8 +70,35 @@ TEMPLATE = """# THIS FILE SUPPORTS COMMENTS AND TRAILING COMMAS
 """
 
 
+TIMEINTERVAL_EXP = re.compile(r"^((?P<is_interval>[+-])?(?P<value>[0-9]+)(?P<suffix>[smhdMy]?))+$")
+SUFFIXES = {"s": 1, "m": 60, "h": 3600, "d": 86400, "M": 2592000, "y": 31536000}
+
+
+def parse_interval(value: str) -> int:
+    match = TIMEINTERVAL_EXP.match(value)
+    if not match:
+        raise argparse.ArgumentTypeError(f"Invalid time interval format: {value}")
+
+    groups = match.groupdict()
+    if groups["is_interval"] is not None:
+        seconds = int(groups["value"])
+        if groups["is_interval"] == "-":
+            seconds = -seconds
+        suffix = SUFFIXES.get(groups["suffix"], 1)
+        return int(seconds * suffix)
+    elif groups["is_interval"] is None and groups["suffix"]:
+        raise argparse.ArgumentTypeError("Invalid time interval format, missing sign: " + value)
+    else:
+        return int(int(groups["value"]))
+
+
 def main(arguments: SimpleNamespace) -> None:
-    jwt = JWT(load_private_key(arguments.private_key))
+    jwt = JWT(
+        load_private_key(arguments.private_key),
+        expires=arguments.expired,
+        nbf_delta=-arguments.nbf,
+        algorithm=arguments.algorithm
+    )
 
     whoami = pwd.getpwuid(os.getuid())
 
@@ -94,25 +123,27 @@ def main(arguments: SimpleNamespace) -> None:
             preable += f"#  * {key} = {value!r}\n"
 
         with NamedTemporaryFile("wt", suffix=".py") as fp:
+            if arguments.interactive:
+                fp.write(
+                    TEMPLATE % {
+                        "exp": arguments.expired,
+                        "nbf": arguments.nbf,
+                        "preamble": preable,
+                    },
+                )
+                fp.flush()
 
-            fp.write(
-                TEMPLATE % {
-                    "exp": arguments.expired,
-                    "nbf": arguments.nbf,
-                    "preamble": preable,
-                },
-            )
-            fp.flush()
+                while True:
+                    check_call([arguments.editor, fp.name])
 
-            while True:
-                check_call([arguments.editor, fp.name])
-
-                try:
-                    claims = eval(open(fp.name).read(), globals, {})
-                    break
-                except (ValueError, TypeError) as exc:
-                    print(f"Error parsing JSON: {exc}", file=sys.stderr)
-                    input("Press Enter to try again... Press Ctrl+C to abort")
+                    try:
+                        claims = eval(open(fp.name).read(), globals, {})
+                        break
+                    except (ValueError, TypeError) as exc:
+                        print(f"Error parsing JSON: {exc}", file=sys.stderr)
+                        input("Press Enter to try again... Press Ctrl+C to abort")
+            else:
+                claims = json.load(sys.stdin)
     else:
         claims = json.loads(sys.stdin.read())
     print(jwt.encode(**claims))

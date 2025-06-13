@@ -9,12 +9,12 @@ from .token import JWT, JWTDecoder, JWTSigner
 def main(arguments: SimpleNamespace) -> None:
     jwt: JWTSigner | JWTDecoder
     if arguments.private_key:
-        jwt = JWT(load_private_key(arguments.private_key))
+        jwt = JWT(load_private_key(arguments.private_key), algorithm=arguments.algorithm)
     elif arguments.public_key:
-        jwt = JWT(load_public_key(arguments.public_key))
+        jwt = JWT(load_public_key(arguments.public_key), algorithm=arguments.algorithm)
     elif not arguments.verify:
         key_pair = generate_rsa(1024)
-        jwt = JWT(key_pair.private)
+        jwt = JWT(key_pair.private, algorithm=arguments.algorithm)
     else:
         print("Either private or public key must be provided", file=sys.stderr)
         exit(1)
