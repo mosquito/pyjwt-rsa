@@ -71,10 +71,16 @@ class JWTSigner(JWTDecoder):
         super(JWTDecoder, self).__setattr__("private_key", key)
         super().__init__(key.public_key(), options=options, **kwargs)
 
-    def encode(self, expired: DateType | EllipsisType = ..., nbf: DateType | EllipsisType = ..., **claims: Any) -> str:
+    def encode(
+        self,
+        expired: DateType | EllipsisType = ...,
+        nbf: DateType | EllipsisType = ...,
+        headers: Optional[Dict[str, Any]] = None,
+        **claims: Any
+    ) -> str:
         claims.setdefault("exp", int(date_to_timestamp(expired, lambda: time.time() + self.expires)))
         claims.setdefault("nbf", int(date_to_timestamp(nbf, lambda: time.time() - self.nbf_delta, timedelta_func=sub)))
-        return self.jwt.encode(claims, self.private_key, algorithm=self.algorithm)
+        return self.jwt.encode(claims, self.private_key, algorithm=self.algorithm, headers=headers)
 
 
 @overload
