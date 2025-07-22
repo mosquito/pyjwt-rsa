@@ -1,9 +1,9 @@
 import argparse
+import http.client
 import json
 import logging
 import ssl
 from abc import ABC, abstractmethod
-import http.client
 from contextlib import closing
 from functools import lru_cache
 from typing import TypedDict, Any
@@ -12,7 +12,8 @@ from urllib.parse import urlparse
 from jwt.api_jws import PyJWS
 
 from . import JWTDecoder
-from .rsa import RSAJWKPublicKey, load_jwk_public_key, RSAPublicKey
+from .rsa import RSAJWKPublicKey, load_jwk_public_key
+from .types import RSAPublicKey
 
 log = logging.getLogger(__name__)
 
@@ -25,7 +26,7 @@ class JWKFetcher(ABC):
     keys: dict[str, RSAPublicKey]
     ca: dict[str, RSAPublicKey]
 
-    def __init__(self, url: str, **kwargs):
+    def __init__(self, url: str, **kwargs: Any) -> None:
         self.url = url
         self.keys = {}
         self.ca = {}
@@ -34,7 +35,7 @@ class JWKFetcher(ABC):
     def load_key(self, key: RSAJWKPublicKey) -> RSAPublicKey | None:
         return load_jwk_public_key(key)
 
-    def parse_jwk(self, jwk: dict) -> dict[str, RSAPublicKey]:
+    def parse_jwk(self, jwk: dict[str, Any]) -> dict[str, RSAPublicKey]:
         keys = {}
         for key in jwk["keys"]:
             jwk = RSAJWKPublicKey(**key)  # type: ignore
@@ -55,7 +56,7 @@ class JWKFetcher(ABC):
             raise ValueError(f"Key with kid '{kid}' is unknown")
         return JWTDecoder(key=self.keys[kid])
 
-    def decode(self, token: str) -> dict:
+    def decode(self, token: str) -> dict[str, Any]:
         header = self.jws.get_unverified_header(token)
         if 'kid' not in header:
             raise ValueError("Token does not contain 'kid' header")
@@ -67,7 +68,7 @@ class JWKFetcher(ABC):
 class HTTPSJWKFetcher(JWKFetcher):
     CLIENT_CLASS = http.client.HTTPSConnection
 
-    def __init__(self, url: str, *, ssl_context=None, **kwargs,):
+    def __init__(self, url: str, *, ssl_context: ssl.SSLContext | None = None, **kwargs: Any) -> None:
         super().__init__(url, **kwargs)
         self.ssl_context = ssl_context or ssl.create_default_context()
 
@@ -78,7 +79,7 @@ class HTTPSJWKFetcher(JWKFetcher):
             if ":" in url_parts.netloc
             else (url_parts.netloc, 443)
         )
-        with closing(self.CLIENT_CLASS(host, port, context=self.ssl_context)) as client:
+        with closing(self.CLIENT_CLASS(host, int(port), context=self.ssl_context)) as client:
             client.request("GET", url_parts.path)
             response = client.getresponse()
             if response.status != 200:

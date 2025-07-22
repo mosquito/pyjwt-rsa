@@ -164,7 +164,7 @@ def test_load_jwk():
 
     with pytest.raises(ValueError):
         # noinspection PyTypeChecker
-        rsa.rsa_to_jwk(None)    # type: ignore
+        rsa.rsa_to_jwk(None)  # type: ignore
 
 
 def test_load_public_key(tmp_path):
