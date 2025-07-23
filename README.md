@@ -52,6 +52,19 @@ claims = jwt.decode(token, verify=False)
 print(claims)
 ```
 
+#### JWKs support
+
+```python
+from jwt_rsa.jwks import HTTPSJWKFetcher
+
+jwks = HTTPSJWKFetcher('https://example.com/.well-known/jwks.json')
+
+# Fetch JWKs from a URL
+jwks.refresh()
+
+jwks.decode('''token''')
+```
+
 #### RSA Key Management
 
 `pyjwt-rsa` provides functions to generate, load, and convert RSA keys.

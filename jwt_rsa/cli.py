@@ -1,10 +1,11 @@
 import argparse
+import logging
 import os
 from argparse import ArgumentParser
 from pathlib import Path
 
 from jwt_rsa.issue import parse_interval
-from . import convert, issue, key_tester, keygen, pubkey, verify
+from . import convert, issue, key_tester, keygen, pubkey, verify, jwks
 from .token import ALGORITHMS
 
 
@@ -16,6 +17,10 @@ parser = ArgumentParser(formatter_class=Formatter)
 parser.add_argument(
     "-a", "--algorithm", choices=ALGORITHMS,
     help="Algorithm for JWT keys", default="RS512"
+)
+parser.add_argument(
+    "--log-level", choices=["debug", "info", "warning", "error", "critical"],
+    type=lambda x: getattr(logging, x.upper(), logging.INFO), default=logging.INFO,
 )
 
 subparsers = parser.add_subparsers(dest="command", required=True)
@@ -105,9 +110,14 @@ convert_parser.add_argument("-o", "--format", choices=["pem", "jwk", "base64"], 
 convert_parser.add_argument("-f", "--force", action="store_true", help="Overwrite existing keys")
 convert_parser.add_argument("-r", "--raw", action="store_false", help="Print JSON with indent", dest="pretty")
 
+jwks_parser = subparsers.add_parser("jwks", help="Fetch JWKs from remote hosts", formatter_class=Formatter)
+jwks_parser.set_defaults(func=jwks.main)
+jwks_parser.add_argument("url", help="URL for JWKs", type=str)
+
 
 def main() -> None:
     args = parser.parse_args()
+    logging.basicConfig(level=args.log_level, format="%(levelname)s: %(message)s")
     args.func(args)
 
 
