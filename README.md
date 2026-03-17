@@ -18,9 +18,10 @@ pip install pyjwt-rsa
 `pyjwt-rsa` can also be used as a Python library for integrating JWT and RSA key management into
 your Python applications.
 
-### JWT Class
+### JWT Factory Function
 
-The `JWT` class provides methods to encode and decode JWT tokens.
+The `JWT` factory function creates a `JWTSigner` (when given a private key) or a `JWTDecoder`
+(when given a public key).
 
 #### Importing and Basic Usage
 
@@ -30,8 +31,8 @@ from jwt_rsa import JWT, generate_rsa
 # Generate RSA key pair
 key_pair = generate_rsa(bits=2048)
 
-# Initialize JWT with private and public keys
-jwt = JWT(private_key=key_pair.private, public_key=key_pair.public)
+# Create a JWTSigner from a private key (can encode and decode)
+jwt = JWT(key=key_pair.private)
 
 # Encode a JWT token
 token = jwt.encode(foo='bar')
@@ -39,6 +40,10 @@ token = jwt.encode(foo='bar')
 # Decode a JWT token
 claims = jwt.decode(token)
 print(claims)
+
+# Create a JWTDecoder from a public key (can only decode)
+decoder = JWT(key=key_pair.public)
+claims = decoder.decode(token)
 ```
 
 #### Handling Expiration and Not Before Claims
@@ -52,6 +57,24 @@ claims = jwt.decode(token, verify=False)
 print(claims)
 ```
 
+#### JWTSigner and JWTDecoder
+
+You can also use `JWTSigner` and `JWTDecoder` directly:
+
+```python
+from jwt_rsa import JWTSigner, JWTDecoder, generate_rsa
+
+key_pair = generate_rsa(bits=2048)
+
+# JWTSigner can encode and decode tokens
+signer = JWTSigner(key=key_pair.private, algorithm="RS256")
+token = signer.encode(sub="user123", role="admin")
+
+# JWTDecoder can only decode tokens
+decoder = JWTDecoder(key=key_pair.public, algorithm="RS256")
+claims = decoder.decode(token)
+```
+
 #### JWKs support
 
 ```python
@@ -62,7 +85,8 @@ jwks = HTTPSJWKFetcher('https://example.com/.well-known/jwks.json')
 # Fetch JWKs from a URL
 jwks.refresh()
 
-jwks.decode('''token''')
+# Decode a token using the appropriate key (selected by kid header)
+claims = jwks.decode(token)
 ```
 
 #### RSA Key Management
@@ -82,15 +106,22 @@ public_key = key_pair.public
 
 **Loading RSA Keys:**
 
+`load_private_key` and `load_public_key` accept a `Path`, a PEM string, a JWK dict, or a
+Base64-encoded DER string. The format is detected automatically.
+
 ```python
 from jwt_rsa import load_private_key, load_public_key
 from pathlib import Path
 
-# Load private key from a file in one of the supported formats (PEM, JWK, Base64)
+# Load from a file
 private_key = load_private_key(Path('./private.pem'))
-
-# Load public key from a file in one of the supported formats (PEM, JWK, Base64)
 public_key = load_public_key(Path('./public.pem'))
+
+# Load from a PEM string
+private_key = load_private_key("-----BEGIN RSA PRIVATE KEY-----\n...")
+
+# Load from a JWK dict
+public_key = load_public_key({"kty": "RSA", "n": "...", "e": "AQAB", ...})
 ```
 
 **Converting RSA Keys to JWK:**
@@ -134,6 +165,22 @@ pip install jwt-rsa
 
 `jwt-rsa` is operated via the command line with various subcommands to perform different tasks.
 Below is an overview of the available commands and their options.
+
+### Global Options
+
+- `-a`, `--algorithm`: Algorithm for JWT keys (`RS256`, `RS384`, `RS512`). Default: `RS512`.
+- `--log-level`: Logging level (`debug`, `info`, `warning`, `error`, `critical`). Default: `info`.
+
+### Time Interval Format
+
+Several commands accept time interval values (e.g., `--expired`, `--nbf`). The following formats
+are supported:
+
+- A plain integer is interpreted as seconds (e.g., `600` = 10 minutes).
+- A value with a suffix and optional `+`/`-` sign (e.g., `+10m`, `-1h`, `+30d`).
+- Supported suffixes: `s` (seconds), `m` (minutes), `h` (hours), `d` (days), `w` (weeks),
+  `M` (months), `y` (years).
+- `+` means future, `-` means past relative to the current time.
 
 ### Commands
 
@@ -191,9 +238,7 @@ Private key in jwk format:
 }
 ```
 
-If you want to save the keys to files, you can use the `-K`/`--save-private` and `-k`/`--save-public` options:
-
-```bash
+If you want to save the keys to files, you can use the `-K`/`--save-private` and `-k`/`--save-public` options.
 
 Generate a 4096-bit RSA key pair and save them in PEM format:
 
@@ -277,8 +322,8 @@ jwt-rsa issue -K PRIVATE_KEY_PATH [options]
 **Options:**
 
 - `-K`, `--private-key`: Path to the private JWT key (required).
-- `--expired`: Token expiration time in seconds (default: `2678400` seconds, which is 31 days).
-- `--nbf`: "Not Before" claim in seconds (default: `-30`).
+- `--expired`: Token expiration time interval (default: `+1M`, i.e., 1 month). See [Time Interval Format](#time-interval-format).
+- `--nbf`: "Not Before" claim time interval (default: `-1m`, i.e., 1 minute in the past). See [Time Interval Format](#time-interval-format).
 - `-I`, `--no-interactive`: Disable interactive mode. By default, interactive mode is enabled.
 - `-e`, `--editor`: Editor to use in interactive mode. Defaults to the `EDITOR` environment variable or `vim`.
 
@@ -411,6 +456,28 @@ Public key in base64 format:
 MIICCg...EAAQ==
 Private key in base64 format:
 MIIJQgIBA....DANBgkqhkiG==
+```
+
+#### `jwks`
+
+Fetch and inspect a JSON Web Key Set (JWKs) from a remote URL.
+
+**Usage:**
+
+```bash
+jwt-rsa jwks URL
+```
+
+**Options:**
+
+- `url`: URL for the JWKs endpoint (positional argument, required).
+
+**Examples:**
+
+Fetch JWKs from a well-known endpoint:
+
+```bash
+$ jwt-rsa jwks https://example.com/.well-known/jwks.json
 ```
 
 ## License
