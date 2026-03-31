@@ -28,7 +28,7 @@ packages = [
 [tool.poetry.dependencies]
 python = "^3.10"
 pyjwt = "^2.10"
-cryptography = ">=45.0"
+cryptography = ">=37.0"
 
 
 [tool.poetry.group.dev.dependencies]
