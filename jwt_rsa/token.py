@@ -19,7 +19,7 @@ R = TypeVar("R")
 DAY = 86400
 DEFAULT_EXPIRATION = timedelta(days=31).total_seconds()
 NBF_DELTA = 20
-ALGORITHMS: tuple[str, ...] = ("RS256", "RS384", "RS512")
+ALGORITHMS: Sequence[AlgorithmType] = ("RS256", "RS384", "RS512")
 
 
 def date_to_timestamp(
@@ -46,7 +46,7 @@ class JWTDecoder:
     expires: int | float
     nbf_delta: int | float
     algorithm: AlgorithmType
-    algorithms: Sequence[str]
+    algorithms: Sequence[AlgorithmType]
 
     def __init__(
         self,
@@ -55,7 +55,7 @@ class JWTDecoder:
         expires: int | float = DEFAULT_EXPIRATION,
         nbf_delta: int | float = NBF_DELTA,
         algorithm: AlgorithmType = "RS512",
-        algorithms: Sequence[str] = ALGORITHMS,
+        algorithms: Sequence[AlgorithmType] = ALGORITHMS,
     ):
         super().__setattr__("public_key", key)
         super().__setattr__("jwt", PyJWT(options))
@@ -98,7 +98,7 @@ def JWT(
     expires: int | float = DEFAULT_EXPIRATION,
     nbf_delta: int | float = NBF_DELTA,
     algorithm: AlgorithmType = "RS512",
-    algorithms: Sequence[str] = ALGORITHMS,
+    algorithms: Sequence[AlgorithmType] = ALGORITHMS,
 ) -> JWTSigner: ...
 
 
@@ -109,7 +109,7 @@ def JWT(
     expires: int | float = DEFAULT_EXPIRATION,
     nbf_delta: int | float = NBF_DELTA,
     algorithm: AlgorithmType = "RS512",
-    algorithms: Sequence[str] = ALGORITHMS,
+    algorithms: Sequence[AlgorithmType] = ALGORITHMS,
 ) -> JWTDecoder: ...
 
 
@@ -120,7 +120,7 @@ def JWT(
     expires: int | float = DEFAULT_EXPIRATION,
     nbf_delta: int | float = NBF_DELTA,
     algorithm: AlgorithmType = "RS512",
-    algorithms: Sequence[str] = ALGORITHMS,
+    algorithms: Sequence[AlgorithmType] = ALGORITHMS,
 ) -> JWTSigner | JWTDecoder:
     kwargs: dict[str, Any] = dict(
         expires=expires,
