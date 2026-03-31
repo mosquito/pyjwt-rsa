@@ -14,7 +14,6 @@ from types import SimpleNamespace
 from .rsa import load_private_key
 from .token import JWT
 
-
 TEMPLATE = """# THIS FILE SUPPORTS COMMENTS AND TRAILING COMMAS
 # Actually it's a Python dictionary that will be evaluated as a JSON object
 # Anyway it supports Python-style single and double quotes, math expressions, etc.
@@ -97,7 +96,7 @@ def main(arguments: SimpleNamespace) -> None:
         load_private_key(arguments.private_key),
         expires=arguments.expired,
         nbf_delta=-arguments.nbf,
-        algorithm=arguments.algorithm
+        algorithm=arguments.algorithm,
     )
 
     whoami = pwd.getpwuid(os.getuid())
@@ -125,7 +124,8 @@ def main(arguments: SimpleNamespace) -> None:
         with NamedTemporaryFile("wt", suffix=".py") as fp:
             if arguments.interactive:
                 fp.write(
-                    TEMPLATE % {
+                    TEMPLATE
+                    % {
                         "exp": arguments.expired,
                         "nbf": arguments.nbf,
                         "preamble": preable,

@@ -5,7 +5,8 @@ from argparse import ArgumentParser
 from pathlib import Path
 
 from jwt_rsa.issue import parse_interval
-from . import convert, issue, key_tester, keygen, pubkey, verify, jwks
+
+from . import convert, issue, jwks, key_tester, keygen, pubkey, verify
 from .token import ALGORITHMS
 
 
@@ -14,13 +15,12 @@ class Formatter(argparse.ArgumentDefaultsHelpFormatter, argparse.RawDescriptionH
 
 
 parser = ArgumentParser(formatter_class=Formatter)
+parser.add_argument("-a", "--algorithm", choices=ALGORITHMS, help="Algorithm for JWT keys", default="RS512")
 parser.add_argument(
-    "-a", "--algorithm", choices=ALGORITHMS,
-    help="Algorithm for JWT keys", default="RS512"
-)
-parser.add_argument(
-    "--log-level", choices=["debug", "info", "warning", "error", "critical"],
-    type=lambda x: getattr(logging, x.upper(), logging.INFO), default=logging.INFO,
+    "--log-level",
+    choices=["debug", "info", "warning", "error", "critical"],
+    type=lambda x: getattr(logging, x.upper(), logging.INFO),
+    default=logging.INFO,
 )
 
 subparsers = parser.add_subparsers(dest="command", required=True)
@@ -28,10 +28,19 @@ subparsers = parser.add_subparsers(dest="command", required=True)
 keygen_parser = subparsers.add_parser("keygen", help="Generate a new RSA key pair", formatter_class=Formatter)
 keygen_parser.set_defaults(func=keygen.main)
 keygen_parser.add_argument(
-    "-b", "--bits", dest="bits", type=int, default=2048, choices=[2 ** i for i in range(10, 14)],
+    "-b",
+    "--bits",
+    dest="bits",
+    type=int,
+    default=2048,
+    choices=[2**i for i in range(10, 14)],
 )
 keygen_parser.add_argument(
-    "--kid", dest="kid", type=str, default="", help="Key ID, will be generated if missing",
+    "--kid",
+    dest="kid",
+    type=str,
+    default="",
+    help="Key ID, will be generated if missing",
 )
 keygen_parser.add_argument("-u", "--use", dest="use", type=str, default="sig", choices=["sig", "enc"])
 keygen_parser.add_argument("-o", "--format", choices=["pem", "jwk", "base64"], default="jwk")
@@ -68,23 +77,28 @@ ISSUE_PARSER_DESCRIPTION = (
     " * 'y' means years\n"
 )
 issue_parser = subparsers.add_parser(
-    "issue",
-    help="Issue a new JWT token\n",
-    description=ISSUE_PARSER_DESCRIPTION,
-    formatter_class=Formatter
+    "issue", help="Issue a new JWT token\n", description=ISSUE_PARSER_DESCRIPTION, formatter_class=Formatter
 )
 issue_parser.add_argument(
-    "-K", "--private-key", required=True,
-    help="Private JWT key", type=Path,
+    "-K",
+    "--private-key",
+    required=True,
+    help="Private JWT key",
+    type=Path,
 )
 issue_parser.add_argument("--expired", help="Token expiration", type=parse_interval, default="+1M")
 issue_parser.add_argument("--nbf", help="Token nbf claim", type=parse_interval, default="-1m")
 issue_parser.add_argument(
-    "-I", "--no-interactive", action="store_false", dest="interactive",
+    "-I",
+    "--no-interactive",
+    action="store_false",
+    dest="interactive",
     help="No interactive mode, do not open editor for claims, just read JSON from stdin",
 )
 issue_parser.add_argument(
-    "-e", "--editor", help="Editor to use in interactive mode",
+    "-e",
+    "--editor",
+    help="Editor to use in interactive mode",
     default=os.getenv("EDITOR", "vim"),
 )
 issue_parser.set_defaults(func=issue.main)
@@ -95,7 +109,10 @@ verify_parser.add_argument("-K", "--private-key", required=False, help="Private 
 verify_parser.add_argument("-k", "--public-key", required=False, help="Public key", type=Path)
 verify_parser.add_argument("-V", "--no-verify", action="store_false", help="No verify signature", dest="verify")
 verify_parser.add_argument(
-    "-I", "--no-interactive", action="store_false", dest="interactive",
+    "-I",
+    "--no-interactive",
+    action="store_false",
+    dest="interactive",
     help="Interactive mode or raw read token from stdin",
 )
 verify_parser.set_defaults(func=verify.main)

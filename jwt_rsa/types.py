@@ -10,7 +10,6 @@ from cryptography.hazmat.primitives.asymmetric.rsa import (
     RSAPublicKeyWithSerialization as RSAPublicKey,
 )
 
-
 AlgorithmType = Literal["RS256", "RS384", "RS512"]
 DateType = timedelta | datetime | float | int
 

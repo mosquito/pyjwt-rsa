@@ -1,14 +1,19 @@
 import time
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from operator import add, sub
 from types import EllipsisType
-from typing import Any, Callable, Dict, Optional, Sequence, TypeVar, overload
+from typing import Any, TypeVar, overload
 
 from jwt import PyJWT
 
-from .types import AlgorithmType, DateType, RSAPrivateKey, RSAPublicKey
+try:
+    from jwt.types import Options as OptionsType
+except ImportError:
+    OptionsType = dict[str, Any]  # type: ignore[assignment,misc]
 
+from .types import AlgorithmType, DateType, RSAPrivateKey, RSAPublicKey
 
 R = TypeVar("R")
 DAY = 86400
@@ -46,7 +51,8 @@ class JWTDecoder:
     def __init__(
         self,
         key: RSAPublicKey,
-        *, options: dict[str, Any] | None = None,
+        *,
+        options: OptionsType | None = None,
         expires: int | float = DEFAULT_EXPIRATION,
         nbf_delta: int | float = NBF_DELTA,
         algorithm: AlgorithmType = "RS512",
@@ -59,15 +65,21 @@ class JWTDecoder:
         super().__setattr__("algorithm", algorithm)
         super().__setattr__("algorithms", algorithms)
 
-    def decode(self, token: str, verify: bool = True, **kwargs: Any) -> Dict[str, Any]:
-        return self.jwt.decode(token, key=self.public_key, verify=verify, algorithms=self.algorithms, **kwargs)
+    def decode(self, token: str, verify: bool = True, **kwargs: Any) -> dict[str, Any]:
+        return self.jwt.decode(
+            token,
+            key=self.public_key,
+            verify=verify,
+            algorithms=list(self.algorithms),
+            **kwargs,
+        )
 
 
 @dataclass(frozen=True, init=False)
 class JWTSigner(JWTDecoder):
     private_key: RSAPrivateKey = field(repr=False, compare=True)
 
-    def __init__(self, key: RSAPrivateKey, *, options: Optional[Dict[str, Any]] = None, **kwargs: Any):
+    def __init__(self, key: RSAPrivateKey, *, options: OptionsType | None = None, **kwargs: Any):
         super(JWTDecoder, self).__setattr__("private_key", key)
         super().__init__(key.public_key(), options=options, **kwargs)
 
@@ -75,8 +87,8 @@ class JWTSigner(JWTDecoder):
         self,
         expired: DateType | EllipsisType = ...,
         nbf: DateType | EllipsisType = ...,
-        headers: Optional[Dict[str, Any]] = None,
-        **claims: Any
+        headers: dict[str, Any] | None = None,
+        **claims: Any,
     ) -> str:
         claims.setdefault("exp", int(date_to_timestamp(expired, lambda: time.time() + self.expires)))
         claims.setdefault("nbf", int(date_to_timestamp(nbf, lambda: time.time() - self.nbf_delta, timedelta_func=sub)))
@@ -85,8 +97,9 @@ class JWTSigner(JWTDecoder):
 
 @overload
 def JWT(
-    key: RSAPrivateKey, *,
-    options: dict[str, Any] | None = None,
+    key: RSAPrivateKey,
+    *,
+    options: OptionsType | None = None,
     expires: int | float = DEFAULT_EXPIRATION,
     nbf_delta: int | float = NBF_DELTA,
     algorithm: AlgorithmType = "RS512",
@@ -96,8 +109,9 @@ def JWT(
 
 @overload
 def JWT(
-    key: RSAPublicKey, *,
-    options: dict[str, Any] | None = None,
+    key: RSAPublicKey,
+    *,
+    options: OptionsType | None = None,
     expires: int | float = DEFAULT_EXPIRATION,
     nbf_delta: int | float = NBF_DELTA,
     algorithm: AlgorithmType = "RS512",
@@ -108,7 +122,7 @@ def JWT(
 def JWT(
     key: RSAPrivateKey | RSAPublicKey,
     *,
-    options: dict[str, Any] | None = None,
+    options: OptionsType | None = None,
     expires: int | float = DEFAULT_EXPIRATION,
     nbf_delta: int | float = NBF_DELTA,
     algorithm: AlgorithmType = "RS512",
