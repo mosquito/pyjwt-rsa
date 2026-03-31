@@ -10,26 +10,29 @@ pyjwt-rsa — Python library and CLI for JWT token management with RSA cryptogra
 
 ```bash
 # Install dependencies
-poetry install
+uv sync
 
-# Run all tests (includes coverage + pylama linting)
-poetry run pytest
+# Run all checks (lint + mypy + tests)
+make test
+
+# Run tests only (includes coverage)
+uv run pytest
 
 # Run tests without coverage
-poetry run pytest --no-cov
+uv run pytest --no-cov
 
 # Run a single test file or test
-poetry run pytest tests/test_rsa.py
-poetry run pytest tests/test_rsa.py::test_jwt_token
+uv run pytest tests/test_rsa.py
+uv run pytest tests/test_rsa.py::test_jwt_token
 
 # Type checking (strict mode)
-poetry run mypy jwt_rsa
+uv run mypy jwt_rsa
 
 # Linting
-poetry run pylama jwt_rsa tests
+uv run ruff check jwt_rsa tests
 
 # Build
-poetry build
+uv build
 ```
 
 ## Architecture
@@ -43,6 +46,6 @@ poetry build
 ## Code Quality
 
 - **mypy strict** — all public functions must have full type annotations. Tests have `ignore_errors = true`.
-- **pylama** — pycodestyle + pyflakes + mccabe. Max line length 119. Ignored: E704.
-- **pytest** — `addopts` integrates coverage, doctests, and pylama in a single run.
+- **ruff** — pycodestyle + pyflakes + isort + pyupgrade + flake8-bugbear. Max line length 119. Ignored: E501, E704.
+- **pytest** — `addopts` integrates coverage and doctests in a single run.
 - Python 3.10+ required. CI tests on 3.10–3.13.

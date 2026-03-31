@@ -5,7 +5,8 @@ from argparse import ArgumentParser
 from pathlib import Path
 
 from jwt_rsa.issue import parse_interval
-from . import convert, issue, key_tester, keygen, pubkey, verify, jwks
+
+from . import convert, issue, jwks, key_tester, keygen, pubkey, verify
 from .token import ALGORITHMS
 
 

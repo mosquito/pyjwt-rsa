@@ -14,7 +14,6 @@ from types import SimpleNamespace
 from .rsa import load_private_key
 from .token import JWT
 
-
 TEMPLATE = """# THIS FILE SUPPORTS COMMENTS AND TRAILING COMMAS
 # Actually it's a Python dictionary that will be evaluated as a JSON object
 # Anyway it supports Python-style single and double quotes, math expressions, etc.

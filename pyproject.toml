@@ -1,10 +1,13 @@
-[tool.poetry]
+[project]
 name = "pyjwt-rsa"
 version = "1.2.0"
 description = "RSA helpers for PyJWT"
-authors = ["Dmitry Orlov <me@mosquito.su>"]
-license = "MIT"
 readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pyjwt>=2.10,<3",
+    "cryptography>=37.0",
+]
 classifiers = [
     "Intended Audience :: Developers",
     "Natural Language :: Russian",
@@ -20,37 +23,44 @@ classifiers = [
     "Topic :: Security",
     "Typing :: Typed",
 ]
-packages = [
-    { include = "jwt_rsa", from = "." }
-]
+license = { file = "LICENCE" }
 
-
-[tool.poetry.dependencies]
-python = "^3.10"
-pyjwt = "^2.10"
-cryptography = ">=37.0"
-
-
-[tool.poetry.group.dev.dependencies]
-mypy = "^1.17"
-pylama = {extras = ["toml"], version = "^8.4.1"}
-pytest = "^8.3"
-pytest-cov = "^6.0.0"
-setuptools = "^75.6.0"
-
-[tool.poetry.scripts]
+[project.scripts]
 jwt-rsa = "jwt_rsa.cli:main"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["uv_build>=0.10.2,<0.11.0"]
+build-backend = "uv_build"
 
-[tool.pylama]
-linters = "pycodestyle,pyflakes,mccabe,mccabe"
+[tool.uv.build-backend]
+module-name = "jwt_rsa"
+module-root = ""
 
-[tool.pylama.linter.pycodestyle]
-max_line_length = 119
-ignore = "E704"
+[dependency-groups]
+dev = [
+    "mypy>=1.17",
+    "pytest>=8.3",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.15.1",
+]
+
+[tool.ruff]
+line-length = 119
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+]
+ignore = [
+    "E501",  # line too long (handled by formatter)
+    "E701",  # multiple statements on one line
+]
 
 [tool.mypy]
 follow_imports = "silent"
@@ -73,4 +83,4 @@ ignore_errors = true
 
 [tool.pytest.ini_options]
 log_cli = true
-addopts = "--cov jwt_rsa --cov-report term-missing --doctest-modules --pylama jwt_rsa --pylama tests"
+addopts = "--cov jwt_rsa --cov-report term-missing --doctest-modules"

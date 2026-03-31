@@ -1,12 +1,16 @@
 import base64
 import json
 from pathlib import Path
-from typing import NamedTuple, Optional, TypedDict, overload
+from typing import NamedTuple, TypedDict, overload
 
 from cryptography.hazmat.backends import default_backend
 
 from .types import (
-    AlgorithmType, RSAPrivateKey, RSAPublicKey, rsa, serialization,
+    AlgorithmType,
+    RSAPrivateKey,
+    RSAPublicKey,
+    rsa,
+    serialization,
 )
 
 
@@ -16,7 +20,7 @@ class KeyPair(NamedTuple):
 
 
 class JWKKeyPair(NamedTuple):
-    private: Optional[RSAPrivateKey]
+    private: RSAPrivateKey | None
     public: RSAPublicKey
 
 
@@ -136,7 +140,7 @@ def rsa_to_jwk(
         public_numbers = key.public_key().public_numbers()
         private_numbers = key.private_numbers()
     else:
-        raise ValueError("Invalid key type: {}".format(type(key)))
+        raise ValueError(f"Invalid key type: {type(key)}")
 
     result = RSAJWKPublicKey(
         kty=kty,
@@ -180,7 +184,7 @@ def load_private_key(data: str | RSAJWKPrivateKey | Path) -> RSAPrivateKey:
         return load_jwk_private_key(json.loads(json.dumps(data)))
     key = serialization.load_der_private_key(base64.b64decode(data), None, default_backend())
     if not isinstance(key, RSAPrivateKey):
-        raise ValueError("Key {!r} is not an RSA key".format(key))
+        raise ValueError(f"Key {key!r} is not an RSA key")
     return key
 
 
@@ -198,7 +202,7 @@ def load_public_key(data: str | RSAJWKPublicKey | Path) -> RSAPublicKey:
         return load_jwk_public_key(json.loads(json.dumps(data)))
     key = serialization.load_der_public_key(base64.b64decode(data), default_backend())
     if not isinstance(key, RSAPublicKey):
-        raise ValueError("Key {!r} is not an RSA key".format(key))
+        raise ValueError(f"Key {key!r} is not an RSA key")
     return key
 
 

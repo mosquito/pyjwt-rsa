@@ -6,7 +6,7 @@ import ssl
 from abc import ABC, abstractmethod
 from contextlib import closing
 from functools import lru_cache
-from typing import TypedDict, Any
+from typing import Any, TypedDict
 from urllib.parse import urlparse
 
 from jwt.api_jws import PyJWS
@@ -50,7 +50,7 @@ class JWKFetcher(ABC):
     def refresh(self) -> Any:
         raise NotImplementedError()
 
-    @lru_cache(1024)
+    @lru_cache(1024)  # noqa: B019
     def decoder(self, kid: str) -> JWTDecoder:
         if kid not in self.keys:
             raise ValueError(f"Key with kid '{kid}' is unknown")
