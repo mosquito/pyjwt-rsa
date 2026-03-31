@@ -213,11 +213,11 @@ def jwk_with_real_keys(rsa_key_pair):
     private_key, public_key = rsa_key_pair
 
     jwk1 = rsa_to_jwk(public_key)
-    jwk1['kid'] = 'real-key-1'
+    jwk1["kid"] = "real-key-1"
 
     private_key2, public_key2 = rsa.generate_rsa(2048)
     jwk2 = rsa_to_jwk(public_key2)
-    jwk2['kid'] = 'real-key-2'
+    jwk2["kid"] = "real-key-2"
 
     return {"keys": [jwk1, jwk2]}
 
@@ -227,10 +227,10 @@ def test_jwk_fetcher_keys_decode_flow(rsa_key_pair):
     private_key2, public_key2 = rsa.generate_rsa(2048)
 
     jwk1 = rsa_to_jwk(public_key1)
-    jwk1['kid'] = 'key-1'
+    jwk1["kid"] = "key-1"
 
     jwk2 = rsa_to_jwk(public_key2)
-    jwk2['kid'] = 'key-2'
+    jwk2["kid"] = "key-2"
 
     class TestJWKFetcher(JWKFetcher):
         def refresh(self) -> Any:
@@ -240,8 +240,8 @@ def test_jwk_fetcher_keys_decode_flow(rsa_key_pair):
     fetcher = TestJWKFetcher("http://example.com")
     fetcher.refresh()
 
-    token1 = JWT(private_key1).encode(data="first", exp=9999999999, headers={'kid': 'key-1'})
-    token2 = JWT(private_key2).encode(data="second", exp=9999999999, headers={'kid': 'key-2'})
+    token1 = JWT(private_key1).encode(data="first", exp=9999999999, headers={"kid": "key-1"})
+    token2 = JWT(private_key2).encode(data="second", exp=9999999999, headers={"kid": "key-2"})
 
     token_no_kid = JWT(private_key2).encode(data="second", exp=9999999999)
 

@@ -56,13 +56,13 @@ def test_pem_format(capsys):
 
     stdout, stderr = capsys.readouterr()
 
-    public_bytes, private_bytes = [
-        x.strip().encode() for x in stdout.split("\n\n", 1)
-    ]
+    public_bytes, private_bytes = [x.strip().encode() for x in stdout.split("\n\n", 1)]
 
     public = serialization.load_pem_public_key(public_bytes, default_backend())
     private = serialization.load_pem_private_key(
-        private_bytes, None, default_backend(),
+        private_bytes,
+        None,
+        default_backend(),
     )
 
     payload = os.urandom(1024 * 16)
@@ -92,10 +92,17 @@ def test_keygen_no_force(capsys, tmp_path):
     public_path = tmp_path / "public.pem"
 
     keygen(
-        parser.parse_args([
-            "keygen", "-o", "pem",
-            "-K", str(private_path), "-k", str(public_path),
-        ]),
+        parser.parse_args(
+            [
+                "keygen",
+                "-o",
+                "pem",
+                "-K",
+                str(private_path),
+                "-k",
+                str(public_path),
+            ]
+        ),
     )
 
     assert private_path.exists()
@@ -109,20 +116,35 @@ def test_keygen_no_force(capsys, tmp_path):
 
     # Try to generate keys again buy don't overwrite existing
     keygen(
-        parser.parse_args([
-            "keygen", "-o", "pem",
-            "-K", str(private_path), "-k", str(public_path),
-        ]),
+        parser.parse_args(
+            [
+                "keygen",
+                "-o",
+                "pem",
+                "-K",
+                str(private_path),
+                "-k",
+                str(public_path),
+            ]
+        ),
     )
 
     assert public_content == public_path.read_text()
     assert private_content == private_path.read_text()
 
     keygen(
-        parser.parse_args([
-            "keygen", "-o", "pem", "-f",
-            "-K", str(private_path), "-k", str(public_path),
-        ]),
+        parser.parse_args(
+            [
+                "keygen",
+                "-o",
+                "pem",
+                "-f",
+                "-K",
+                str(private_path),
+                "-k",
+                str(public_path),
+            ]
+        ),
     )
 
     assert public_content != public_path.read_text()

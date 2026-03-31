@@ -96,7 +96,7 @@ def main(arguments: SimpleNamespace) -> None:
         load_private_key(arguments.private_key),
         expires=arguments.expired,
         nbf_delta=-arguments.nbf,
-        algorithm=arguments.algorithm
+        algorithm=arguments.algorithm,
     )
 
     whoami = pwd.getpwuid(os.getuid())
@@ -124,7 +124,8 @@ def main(arguments: SimpleNamespace) -> None:
         with NamedTemporaryFile("wt", suffix=".py") as fp:
             if arguments.interactive:
                 fp.write(
-                    TEMPLATE % {
+                    TEMPLATE
+                    % {
                         "exp": arguments.expired,
                         "nbf": arguments.nbf,
                         "preamble": preable,

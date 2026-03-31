@@ -43,7 +43,7 @@ class JWKFetcher(ABC):
             if loaded_key is None:
                 log.warning("Skipping JWK key: %s", key)
                 continue
-            keys[jwk['kid']] = loaded_key
+            keys[jwk["kid"]] = loaded_key
         return keys
 
     @abstractmethod
@@ -58,10 +58,10 @@ class JWKFetcher(ABC):
 
     def decode(self, token: str) -> dict[str, Any]:
         header = self.jws.get_unverified_header(token)
-        if 'kid' not in header:
+        if "kid" not in header:
             raise ValueError("Token does not contain 'kid' header")
 
-        decoder = self.decoder(header['kid'])
+        decoder = self.decoder(header["kid"])
         return decoder.decode(token)
 
 
@@ -74,11 +74,7 @@ class HTTPSJWKFetcher(JWKFetcher):
 
     def refresh(self) -> None:
         url_parts = urlparse(self.url)
-        host, port = (
-            url_parts.netloc.split(":")
-            if ":" in url_parts.netloc
-            else (url_parts.netloc, 443)
-        )
+        host, port = url_parts.netloc.split(":") if ":" in url_parts.netloc else (url_parts.netloc, 443)
         with closing(self.CLIENT_CLASS(host, int(port), context=self.ssl_context)) as client:
             client.request("GET", url_parts.path)
             response = client.getresponse()
@@ -91,6 +87,7 @@ class HTTPSJWKFetcher(JWKFetcher):
 
 def main(args: argparse.Namespace) -> None:
     from .rsa import rsa_to_jwk
+
     fetcher = HTTPSJWKFetcher(args.url)
     fetcher.refresh()
 

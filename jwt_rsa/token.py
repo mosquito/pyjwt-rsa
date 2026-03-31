@@ -51,7 +51,8 @@ class JWTDecoder:
     def __init__(
         self,
         key: RSAPublicKey,
-        *, options: OptionsType | None = None,
+        *,
+        options: OptionsType | None = None,
         expires: int | float = DEFAULT_EXPIRATION,
         nbf_delta: int | float = NBF_DELTA,
         algorithm: AlgorithmType = "RS512",
@@ -66,8 +67,11 @@ class JWTDecoder:
 
     def decode(self, token: str, verify: bool = True, **kwargs: Any) -> dict[str, Any]:
         return self.jwt.decode(
-            token, key=self.public_key, verify=verify,
-            algorithms=list(self.algorithms), **kwargs,
+            token,
+            key=self.public_key,
+            verify=verify,
+            algorithms=list(self.algorithms),
+            **kwargs,
         )
 
 
@@ -84,7 +88,7 @@ class JWTSigner(JWTDecoder):
         expired: DateType | EllipsisType = ...,
         nbf: DateType | EllipsisType = ...,
         headers: dict[str, Any] | None = None,
-        **claims: Any
+        **claims: Any,
     ) -> str:
         claims.setdefault("exp", int(date_to_timestamp(expired, lambda: time.time() + self.expires)))
         claims.setdefault("nbf", int(date_to_timestamp(nbf, lambda: time.time() - self.nbf_delta, timedelta_func=sub)))
@@ -93,7 +97,8 @@ class JWTSigner(JWTDecoder):
 
 @overload
 def JWT(
-    key: RSAPrivateKey, *,
+    key: RSAPrivateKey,
+    *,
     options: OptionsType | None = None,
     expires: int | float = DEFAULT_EXPIRATION,
     nbf_delta: int | float = NBF_DELTA,
@@ -104,7 +109,8 @@ def JWT(
 
 @overload
 def JWT(
-    key: RSAPublicKey, *,
+    key: RSAPublicKey,
+    *,
     options: OptionsType | None = None,
     expires: int | float = DEFAULT_EXPIRATION,
     nbf_delta: int | float = NBF_DELTA,

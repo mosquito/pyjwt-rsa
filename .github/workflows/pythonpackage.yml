@@ -10,6 +10,23 @@ env:
   FORCE_COLOR: 1
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Run ruff check
+        run: uv run ruff check jwt_rsa tests
+
+      - name: Run ruff format check
+        run: uv run ruff format --check jwt_rsa tests
+
   mypy:
     runs-on: ubuntu-latest
     strategy:

@@ -19,9 +19,11 @@ def generate_kid(key: RSAPrivateKey) -> str:
 
 
 def convert(
-    private: RSAPrivateKey, public: RSAPublicKey,
+    private: RSAPrivateKey,
+    public: RSAPublicKey,
     fmt: Literal["pem", "jwk", "base64"],
-    pretty: bool = False, algorithm: AlgorithmType = "RS512",
+    pretty: bool = False,
+    algorithm: AlgorithmType = "RS512",
 ) -> tuple[str, str]:
     if fmt == "pem":
         return (

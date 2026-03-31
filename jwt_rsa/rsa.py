@@ -98,7 +98,7 @@ def load_jwk(jwk: RSAJWKPublicKey | RSAJWKPrivateKey | str) -> JWKKeyPair:
         jwk_dict = jwk
 
     if "d" in jwk_dict:  # Private key
-        private_key = load_jwk_private_key(jwk_dict)    # type: ignore
+        private_key = load_jwk_private_key(jwk_dict)  # type: ignore
         public_key = private_key.public_key()
     else:  # Public key
         public_key = load_jwk_public_key(jwk_dict)
@@ -108,20 +108,32 @@ def load_jwk(jwk: RSAJWKPublicKey | RSAJWKPrivateKey | str) -> JWKKeyPair:
 
 
 def int_to_base64url(value: int) -> str:
-    return base64.urlsafe_b64encode(
-        value.to_bytes((value.bit_length() + 7) // 8, byteorder="big"),
-    ).rstrip(b"=").decode("ascii")
+    return (
+        base64.urlsafe_b64encode(
+            value.to_bytes((value.bit_length() + 7) // 8, byteorder="big"),
+        )
+        .rstrip(b"=")
+        .decode("ascii")
+    )
 
 
 @overload
 def rsa_to_jwk(
-    key: RSAPublicKey, *, kid: str = "", alg: AlgorithmType = "RS256", use: str = "sig",
+    key: RSAPublicKey,
+    *,
+    kid: str = "",
+    alg: AlgorithmType = "RS256",
+    use: str = "sig",
 ) -> RSAJWKPublicKey: ...
 
 
 @overload
 def rsa_to_jwk(
-    key: RSAPrivateKey, *, kid: str = "", alg: AlgorithmType = "RS256", use: str = "sig",
+    key: RSAPrivateKey,
+    *,
+    kid: str = "",
+    alg: AlgorithmType = "RS256",
+    use: str = "sig",
 ) -> RSAJWKPrivateKey: ...
 
 
